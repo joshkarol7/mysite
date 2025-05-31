@@ -14,10 +14,10 @@ export default function About() {
       <div className="space-y-6">
         <h1 className="text-4xl font-bold mb-8">about me</h1>
         
-        <p>Hey, I'm Josh Karol.</p>
+        <p>Hey, I&apos;m Josh Karol.</p>
         
         <p>
-          I'm co-founder/CTO of{" "}
+          I&apos;m co-founder/CTO of{" "}
           <a 
             href="https://www.crowdvolt.com" 
             className="text-blue-600 dark:text-blue-400 hover:underline"
@@ -26,7 +26,7 @@ export default function About() {
           >
             CrowdVolt
           </a>
-          , where we're building a high-tech secondary ticketing marketplace.
+          , where we&apos;re building a high-tech secondary ticketing marketplace.
         </p>
         
         <p>

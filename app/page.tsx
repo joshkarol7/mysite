@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -17,7 +16,7 @@ export default function Home() {
         <h2 className="text-2xl font-semibold mb-6">favorite reads / listenings</h2>
         <div className="space-y-4">
         <div>
-            <span className="font-medium">work expands to fill available time</span> • <a href="https://en.wikipedia.org/wiki/Parkinson%27s_law" className="text-blue-600 dark:text-blue-400 hover:underline">Parkinson's law</a>
+            <span className="font-medium">work expands to fill available time</span> • <a href="https://en.wikipedia.org/wiki/Parkinson%27s_law" className="text-blue-600 dark:text-blue-400 hover:underline">Parkinson&apos;s law</a>
           </div>
 
           <div>
