@@ -49,13 +49,20 @@ export default function Home() {
 
       {/* Blog Section */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-6">writing?</h2>
+        <h2 className="text-2xl font-semibold mb-6">writing</h2>
         <div className="space-y-4">
           <div>
-            
-            <p className="text-gray-600 dark:text-gray-400 t mt-1">
-              coming soon
-            </p>
+            <div className="flex items-baseline gap-3">
+              <Link
+                href="/writing/how-we-build"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                how we build
+              </Link>
+              <span className="text-xs tracking-widest text-gray-600 dark:text-gray-400">
+                Jan 13, ’26
+              </span>
+            </div>
           </div>
         </div>
       </section>

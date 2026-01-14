@@ -51,6 +51,18 @@ export default function Travel() {
     {
       src: "/travel/IMG_0807_Original.jpg",
       alt: "Travel photo 12"
+    },
+    {
+      src: "/travel/asia1.png",
+      alt: "Travel photo 13"
+    },
+    {
+      src: "/travel/asia2.png",
+      alt: "Travel photo 14"
+    },
+    {
+      src: "/travel/asia3.png",
+      alt: "Travel photo 15"
     }
   ];
 
