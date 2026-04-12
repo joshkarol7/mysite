@@ -52,12 +52,13 @@ function createSwimMaterial(opacity: number) {
     // Swimming deformation: sine wave along body length
     // Model Z range: -0.209 to 0.200 (length ~0.41)
     // Tail is at -Z, head is at +Z
+    // Using `transformed` (not `position`) so it works consistently across GPUs
     shader.vertexShader = shader.vertexShader.replace(
       '#include <begin_vertex>',
       `#include <begin_vertex>
 
       // 0 = head (+Z), 1 = tail (-Z)
-      float bodyPos = clamp(1.0 - (position.z + 0.21) / 0.41, 0.0, 1.0);
+      float bodyPos = clamp(1.0 - (transformed.z + 0.21) / 0.41, 0.0, 1.0);
 
       // Tail whips harder (cubic falloff)
       float tailPower = bodyPos * bodyPos * bodyPos;
@@ -65,18 +66,11 @@ function createSwimMaterial(opacity: number) {
       // Traveling wave from head to tail
       float wave = sin(uTime * 5.0 - bodyPos * 4.0);
 
-      // Main side-to-side motion (X axis) — hard tail whip
+      // Side-to-side tail whip — the main swimming motion
       transformed.x += wave * 0.06 * tailPower * uIntensity;
 
-      // Pectoral fins: vertices near the middle-sides of the body get extra motion
-      float finZone = smoothstep(0.15, 0.0, abs(position.z)) * smoothstep(-0.02, -0.05, position.y);
-      float finFlap = sin(uTime * 9.0) * 0.015 * finZone * uIntensity;
-      transformed.y += finFlap;
-      // Fins splay outward
-      transformed.x += sin(uTime * 9.0 + 1.5) * 0.008 * finZone * uIntensity * sign(position.x);
-
-      // Vertical undulation — very subtle, mostly side-to-side
-      transformed.y += wave * 0.005 * tailPower * uIntensity;`
+      // Very subtle vertical — keeps it natural without the belly bounce
+      transformed.y += wave * 0.004 * tailPower * uIntensity;`
     );
 
     (mat as any)._swimShader = shader;
