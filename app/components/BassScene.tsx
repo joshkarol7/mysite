@@ -15,168 +15,208 @@ const TEXTURES = {
 
 useGLTF.preload(BASS_MODEL);
 
-let sharedMaterial: THREE.MeshStandardMaterial | null = null;
+// Shared textures — loaded once
+let sharedTextures: { albedo: THREE.Texture; alpha: THREE.Texture; normal: THREE.Texture; roughness: THREE.Texture } | null = null;
+function getTextures() {
+  if (sharedTextures) return sharedTextures;
+  const l = new THREE.TextureLoader();
+  const albedo = l.load(TEXTURES.albedo);
+  const alpha = l.load(TEXTURES.alpha);
+  const normal = l.load(TEXTURES.normal);
+  const roughness = l.load(TEXTURES.roughness);
+  [albedo, alpha, normal, roughness].forEach((t) => { t.flipY = false; });
+  albedo.colorSpace = THREE.SRGBColorSpace;
+  sharedTextures = { albedo, alpha, normal, roughness };
+  return sharedTextures;
+}
 
-function useBassMaterial() {
-  return useMemo(() => {
-    if (sharedMaterial) return sharedMaterial;
-    const loader = new THREE.TextureLoader();
-    const albedo = loader.load(TEXTURES.albedo);
-    const alpha = loader.load(TEXTURES.alpha);
-    const normal = loader.load(TEXTURES.normal);
-    const roughness = loader.load(TEXTURES.roughness);
-    [albedo, alpha, normal, roughness].forEach((t) => { t.flipY = false; });
-    albedo.colorSpace = THREE.SRGBColorSpace;
-    sharedMaterial = new THREE.MeshStandardMaterial({
-      map: albedo, alphaMap: alpha, normalMap: normal, roughnessMap: roughness,
-      roughness: 0.65, metalness: 0.1, envMapIntensity: 0.8,
-      transparent: true, alphaTest: 0.1, side: THREE.DoubleSide,
-    });
-    return sharedMaterial;
-  }, []);
+function createSwimMaterial(opacity: number) {
+  const tex = getTextures();
+  const mat = new THREE.MeshStandardMaterial({
+    map: tex.albedo, alphaMap: tex.alpha, normalMap: tex.normal, roughnessMap: tex.roughness,
+    roughness: 0.65, metalness: 0.1, envMapIntensity: 0.8,
+    transparent: true, alphaTest: 0.1, opacity, side: THREE.DoubleSide,
+  });
+
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = { value: 0 };
+    shader.uniforms.uIntensity = { value: 1.0 };
+
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <common>',
+      `#include <common>
+      uniform float uTime;
+      uniform float uIntensity;`
+    );
+
+    // Swimming deformation: sine wave along body length
+    // Model Z range: -0.209 to 0.200 (length ~0.41)
+    // Tail is at -Z, head is at +Z
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>
+
+      // 0 = head (+Z), 1 = tail (-Z)
+      float bodyPos = clamp(1.0 - (position.z + 0.21) / 0.41, 0.0, 1.0);
+
+      // Tail whips harder (cubic falloff)
+      float tailPower = bodyPos * bodyPos * bodyPos;
+
+      // Traveling wave from head to tail
+      float wave = sin(uTime * 5.0 - bodyPos * 4.0);
+
+      // Main side-to-side motion (X axis) — hard tail whip
+      transformed.x += wave * 0.06 * tailPower * uIntensity;
+
+      // Pectoral fins: vertices near the middle-sides of the body get extra motion
+      float finZone = smoothstep(0.15, 0.0, abs(position.z)) * smoothstep(-0.02, -0.05, position.y);
+      float finFlap = sin(uTime * 9.0) * 0.028 * finZone * uIntensity;
+      transformed.y += finFlap;
+      // Fins splay outward
+      transformed.x += sin(uTime * 9.0 + 1.5) * 0.012 * finZone * uIntensity * sign(position.x);
+
+      // Vertical undulation
+      transformed.y += wave * 0.018 * tailPower * uIntensity;`
+    );
+
+    (mat as any)._swimShader = shader;
+  };
+
+  return mat;
 }
 
 function SwimmingBass({
-  y,
-  z,
-  fishScale = 1,
-  speed = 1,
-  direction = 1, // 1 = swimming right, -1 = swimming left
-  fishOpacity = 1,
-  yDrift = 0.15,
+  y, z, fishScale = 1, speed = 1, direction = 1,
+  fishOpacity = 1, yDrift = 0.15, swimIntensity = 1,
 }: {
-  y: number;
-  z: number;
-  fishScale?: number;
-  speed?: number;
-  direction?: number;
-  fishOpacity?: number;
-  yDrift?: number;
+  y: number; z: number; fishScale?: number; speed?: number;
+  direction?: number; fishOpacity?: number; yDrift?: number; swimIntensity?: number;
 }) {
   const { scene } = useGLTF(BASS_MODEL);
-  const bassMaterial = useBassMaterial();
   const groupRef = useRef<THREE.Group>(null);
-  const timeOffset = useRef(Math.random() * 200);
+  const timeOffset = useRef(Math.random() * 100);
+  const matsRef = useRef<THREE.MeshStandardMaterial[]>([]);
 
   const clonedScene = useMemo(() => {
     const cloned = scene.clone();
+    const mats: THREE.MeshStandardMaterial[] = [];
     cloned.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const mat = bassMaterial.clone();
-        mat.opacity = fishOpacity;
+        const mat = createSwimMaterial(fishOpacity);
         child.material = mat;
         child.geometry.computeVertexNormals();
+        mats.push(mat);
       }
     });
+    matsRef.current = mats;
     return cloned;
-  }, [scene, bassMaterial, fishOpacity]);
+  }, [scene, fishOpacity]);
 
-  // OBJ is ~0.41 long; scale to make fish visible
-  const s = 6.5 * fishScale;
-  // Viewport is ~12 units wide at z=0. Range = 30 so wrap happens ~9 units offscreen each side.
+  const s = 10 * fishScale;
   const range = 30;
-  // Fade only the outer 4 units so fish are fully visible across the viewport
   const fadeZone = 4;
+  const faceDir = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
 
   useFrame((state) => {
     if (!groupRef.current) return;
     const t = state.clock.elapsedTime + timeOffset.current;
 
-    // Calm horizontal swim
+    // Swim across
     const rawX = (t * speed * 0.35) % range;
-    const x = direction > 0
-      ? -range / 2 + rawX
-      : range / 2 - rawX;
-
+    const x = direction > 0 ? -range / 2 + rawX : range / 2 - rawX;
     groupRef.current.position.x = x;
     groupRef.current.position.y = y + Math.sin(t * 0.3 * speed) * yDrift;
 
-    // Fade at the very edges only — just to prevent the hard snap on wrap
+    // Edge fade
     const absX = Math.abs(x);
-    const halfRange = range / 2;
     let edgeOpacity = 1;
-    if (absX > halfRange - fadeZone) {
-      edgeOpacity = Math.max(0, (halfRange - absX) / fadeZone);
+    if (absX > range / 2 - fadeZone) {
+      edgeOpacity = Math.max(0, (range / 2 - absX) / fadeZone);
     }
 
-    groupRef.current.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
-        child.material.opacity = fishOpacity * edgeOpacity;
+    // Update shader time + opacity
+    matsRef.current.forEach((mat) => {
+      mat.opacity = fishOpacity * edgeOpacity;
+      const shader = (mat as any)._swimShader;
+      if (shader) {
+        shader.uniforms.uTime.value = t * speed;
+        shader.uniforms.uIntensity.value = swimIntensity;
       }
     });
 
-    // Very subtle body undulation
-    groupRef.current.rotation.z = Math.sin(t * speed * 0.8) * 0.015;
+    // Yaw wobble — moderate, not too tilty
+    groupRef.current.rotation.y = faceDir + Math.sin(t * speed * 1.5) * 0.06;
+    groupRef.current.rotation.z = Math.sin(t * speed * 0.8) * 0.025;
   });
-
-  // The OBJ model's nose points along -Z.
-  // To swim RIGHT: rotate Y by +PI/2 (nose points +X)
-  // To swim LEFT:  rotate Y by -PI/2 (nose points -X)
-  const faceDirection = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
 
   return (
     <group ref={groupRef} position={[0, y, z]}>
-      <primitive
-        object={clonedScene}
-        scale={[s, s, s]}
-        rotation={[0, faceDirection, 0]}
-      />
+      <primitive object={clonedScene} scale={[s, s, s]} />
     </group>
   );
 }
 
-// Generate a school of fish spread vertically across the full page height
 function generateSchool() {
-  // Fish from top (y=6) to far bottom (y=-30) so you see new fish as you scroll
-  // The camera is at z=10, so fish at z=0 are closest, z=-12 are far
-  // Calm speeds but VISIBLE opacity — fish should be clearly seen
-  const fish = [
-    // === TOP OF PAGE (hero area) ===
-    { y: 2.5, z: -1, fishScale: 0.9, speed: 0.25, direction: 1, fishOpacity: 0.9, yDrift: 0.08 },
-    { y: 0.5, z: -1.5, fishScale: 0.7, speed: 0.2, direction: -1, fishOpacity: 0.85, yDrift: 0.1 },
-    { y: -1, z: -3, fishScale: 0.5, speed: 0.3, direction: 1, fishOpacity: 0.7, yDrift: 0.1 },
-    { y: 1.5, z: -2, fishScale: 0.55, speed: 0.22, direction: -1, fishOpacity: 0.75, yDrift: 0.08 },
-    { y: -0.5, z: -4, fishScale: 0.4, speed: 0.18, direction: 1, fishOpacity: 0.5, yDrift: 0.1 },
+  // 18 fish, speeds vary from 0.3 (cruising) to 0.7 (hauling ass)
+  return [
+    // === TOP ===
+    { y: 2.5, z: -0.5, fishScale: 1.2, speed: 0.55, direction: 1, fishOpacity: 0.9, yDrift: 0.08, swimIntensity: 1.2 },
+    { y: 0.3, z: -1, fishScale: 1.0, speed: 0.35, direction: -1, fishOpacity: 0.85, yDrift: 0.1, swimIntensity: 1.0 },
+    { y: -1.2, z: -2, fishScale: 0.75, speed: 0.65, direction: 1, fishOpacity: 0.75, yDrift: 0.1, swimIntensity: 1.3 },
+    { y: 1.5, z: -1.5, fishScale: 0.8, speed: 0.4, direction: -1, fishOpacity: 0.8, yDrift: 0.08, swimIntensity: 1.0 },
 
-    // === MIDDLE (reads / explore sections) ===
-    { y: -4, z: -1, fishScale: 0.8, speed: 0.22, direction: -1, fishOpacity: 0.85, yDrift: 0.08 },
-    { y: -5.5, z: -2, fishScale: 0.6, speed: 0.28, direction: 1, fishOpacity: 0.7, yDrift: 0.1 },
-    { y: -3.5, z: -3.5, fishScale: 0.45, speed: 0.2, direction: -1, fishOpacity: 0.55, yDrift: 0.1 },
-    { y: -6.5, z: -1.5, fishScale: 0.7, speed: 0.18, direction: 1, fishOpacity: 0.8, yDrift: 0.08 },
+    // === MID-TOP ===
+    { y: -3, z: -0.5, fishScale: 1.1, speed: 0.45, direction: -1, fishOpacity: 0.9, yDrift: 0.08, swimIntensity: 1.1 },
+    { y: -4.5, z: -1.5, fishScale: 0.85, speed: 0.7, direction: 1, fishOpacity: 0.8, yDrift: 0.1, swimIntensity: 1.4 },
+    { y: -5.5, z: -2.5, fishScale: 0.6, speed: 0.3, direction: -1, fishOpacity: 0.6, yDrift: 0.1, swimIntensity: 0.8 },
+    { y: -6.5, z: -1, fishScale: 0.95, speed: 0.5, direction: 1, fishOpacity: 0.85, yDrift: 0.08, swimIntensity: 1.1 },
 
-    // === LOWER (writing / contact sections) ===
-    { y: -9, z: -1, fishScale: 0.85, speed: 0.22, direction: 1, fishOpacity: 0.85, yDrift: 0.08 },
-    { y: -10.5, z: -2, fishScale: 0.6, speed: 0.25, direction: -1, fishOpacity: 0.7, yDrift: 0.1 },
-    { y: -11.5, z: -1.5, fishScale: 0.65, speed: 0.2, direction: 1, fishOpacity: 0.75, yDrift: 0.08 },
-    { y: -13, z: -3, fishScale: 0.45, speed: 0.28, direction: -1, fishOpacity: 0.55, yDrift: 0.1 },
+    // === MIDDLE ===
+    { y: -9, z: -0.5, fishScale: 1.15, speed: 0.4, direction: 1, fishOpacity: 0.9, yDrift: 0.08, swimIntensity: 1.0 },
+    { y: -10.5, z: -1.5, fishScale: 0.8, speed: 0.6, direction: -1, fishOpacity: 0.75, yDrift: 0.1, swimIntensity: 1.3 },
+    { y: -11.5, z: -1, fishScale: 0.9, speed: 0.35, direction: 1, fishOpacity: 0.8, yDrift: 0.08, swimIntensity: 1.0 },
+    { y: -13, z: -2, fishScale: 0.65, speed: 0.55, direction: -1, fishOpacity: 0.65, yDrift: 0.1, swimIntensity: 1.2 },
 
-    // === DEEP (if they scroll way down) ===
-    { y: -15, z: -1.5, fishScale: 0.75, speed: 0.22, direction: -1, fishOpacity: 0.8, yDrift: 0.08 },
-    { y: -17, z: -2.5, fishScale: 0.55, speed: 0.25, direction: 1, fishOpacity: 0.65, yDrift: 0.1 },
-    { y: -16, z: -1, fishScale: 0.65, speed: 0.18, direction: 1, fishOpacity: 0.8, yDrift: 0.08 },
-    { y: -19, z: -3.5, fishScale: 0.4, speed: 0.2, direction: -1, fishOpacity: 0.5, yDrift: 0.1 },
-    { y: -18, z: -2, fishScale: 0.7, speed: 0.22, direction: -1, fishOpacity: 0.75, yDrift: 0.08 },
+    // === LOWER ===
+    { y: -15, z: -1, fishScale: 1.0, speed: 0.5, direction: -1, fishOpacity: 0.85, yDrift: 0.08, swimIntensity: 1.1 },
+    { y: -16.5, z: -0.5, fishScale: 0.9, speed: 0.3, direction: 1, fishOpacity: 0.85, yDrift: 0.08, swimIntensity: 0.9 },
+    { y: -18, z: -2, fishScale: 0.7, speed: 0.65, direction: -1, fishOpacity: 0.7, yDrift: 0.1, swimIntensity: 1.3 },
+
+    // === DEEP ===
+    { y: -20, z: -1, fishScale: 1.1, speed: 0.45, direction: 1, fishOpacity: 0.85, yDrift: 0.08, swimIntensity: 1.0 },
+    { y: -21.5, z: -1.5, fishScale: 0.75, speed: 0.55, direction: -1, fishOpacity: 0.7, yDrift: 0.1, swimIntensity: 1.2 },
+    { y: -23, z: -0.5, fishScale: 0.85, speed: 0.35, direction: 1, fishOpacity: 0.8, yDrift: 0.08, swimIntensity: 1.0 },
   ];
-  return fish;
 }
 
-// Camera that follows scroll position
-function ScrollCamera() {
+function ScrollingFishGroup({ school }: { school: ReturnType<typeof generateSchool> }) {
   const groupRef = useRef<THREE.Group>(null);
+  const lastScrollY = useRef(0);
+  const currentY = useRef(0);
 
   useFrame(() => {
     if (!groupRef.current) return;
-    // Map scroll position to camera Y. As user scrolls down, camera moves down.
     const scrollY = window.scrollY;
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
     const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
-    // Total vertical range of fish is about y=3 to y=-19 = 22 units
-    const targetY = 1 - scrollRatio * 22;
-    // Lerp for smooth following
-    groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.08;
+    const targetY = scrollRatio * 22;
+    const scrollDelta = Math.abs(scrollY - lastScrollY.current);
+    lastScrollY.current = scrollY;
+    if (scrollDelta > 500) {
+      currentY.current = targetY;
+    } else {
+      currentY.current += (targetY - currentY.current) * 0.03;
+    }
+    groupRef.current.position.y = currentY.current;
   });
 
-  return <group ref={groupRef} />;
+  return (
+    <group ref={groupRef}>
+      {school.map((fish, i) => (
+        <SwimmingBass key={i} {...fish} />
+      ))}
+    </group>
+  );
 }
 
 export default function BassScene({ className = "" }: { className?: string }) {
@@ -191,56 +231,15 @@ export default function BassScene({ className = "" }: { className?: string }) {
         style={{ background: "transparent" }}
       >
         <Suspense fallback={null}>
-          {/* Lighting */}
           <ambientLight intensity={0.3} color="#b0c4b8" />
           <directionalLight position={[6, 4, 5]} intensity={1.0} color="#e0ece4" />
           <directionalLight position={[-5, 2, -3]} intensity={0.3} color="#7a9e8e" />
           <pointLight position={[0, 1, -6]} intensity={2} color="#4a9e7e" distance={15} decay={2} />
           <pointLight position={[0, -3, 0]} intensity={0.2} color="#3a5a4a" distance={10} decay={2} />
           <Environment preset="night" environmentIntensity={0.3} />
-
-          {/* Camera group that follows scroll */}
-          <ScrollCamera />
-
-          {/* Move all fish relative to scroll via a parent group */}
           <ScrollingFishGroup school={school} />
         </Suspense>
       </Canvas>
     </div>
-  );
-}
-
-function ScrollingFishGroup({ school }: { school: ReturnType<typeof generateSchool> }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const lastScrollY = useRef(0);
-  const currentY = useRef(0);
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const scrollY = window.scrollY;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
-    const targetY = scrollRatio * 22;
-
-    // If scroll jumped more than 500px (page navigation), snap instead of lerp
-    const scrollDelta = Math.abs(scrollY - lastScrollY.current);
-    lastScrollY.current = scrollY;
-
-    if (scrollDelta > 500) {
-      currentY.current = targetY;
-    } else {
-      // Gentle lerp — very slow so fish feel calm
-      currentY.current += (targetY - currentY.current) * 0.03;
-    }
-
-    groupRef.current.position.y = currentY.current;
-  });
-
-  return (
-    <group ref={groupRef}>
-      {school.map((fish, i) => (
-        <SwimmingBass key={i} {...fish} />
-      ))}
-    </group>
   );
 }
