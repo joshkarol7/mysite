@@ -36,6 +36,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude
+.claude/
+
+# raw 3d model downloads
+model-69a-striped-bass/
+public/stripedBass_meshonly.obj
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
