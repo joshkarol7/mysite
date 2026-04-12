@@ -13,7 +13,7 @@ const fadeUp = {
     transition: {
       delay: i * 0.1,
       duration: 0.7,
-      ease: [0.14, 1, 0.34, 1],
+      ease: [0.14, 1, 0.34, 1] as const,
     },
   }),
 };
@@ -32,9 +32,6 @@ function HeroSection() {
     target: ref,
     offset: ["start start", "end start"],
   });
-  const bassY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-  const bassRotate = useTransform(scrollYProgress, [0, 1], [0, -5]);
-  const bassOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const textY = useTransform(scrollYProgress, [0, 1], [0, -40]);
 
   return (
