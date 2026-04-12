@@ -70,13 +70,13 @@ function createSwimMaterial(opacity: number) {
 
       // Pectoral fins: vertices near the middle-sides of the body get extra motion
       float finZone = smoothstep(0.15, 0.0, abs(position.z)) * smoothstep(-0.02, -0.05, position.y);
-      float finFlap = sin(uTime * 9.0) * 0.028 * finZone * uIntensity;
+      float finFlap = sin(uTime * 9.0) * 0.015 * finZone * uIntensity;
       transformed.y += finFlap;
       // Fins splay outward
-      transformed.x += sin(uTime * 9.0 + 1.5) * 0.012 * finZone * uIntensity * sign(position.x);
+      transformed.x += sin(uTime * 9.0 + 1.5) * 0.008 * finZone * uIntensity * sign(position.x);
 
-      // Vertical undulation
-      transformed.y += wave * 0.018 * tailPower * uIntensity;`
+      // Vertical undulation — very subtle, mostly side-to-side
+      transformed.y += wave * 0.005 * tailPower * uIntensity;`
     );
 
     (mat as any)._swimShader = shader;
