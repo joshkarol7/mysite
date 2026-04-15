@@ -248,6 +248,11 @@ function NavigationSection() {
 function WritingSection() {
   const articles = [
     {
+      href: "/writing/rolling-forward",
+      title: "rolling forward",
+      date: "Apr 15, '26",
+    },
+    {
       href: "/writing/prove-your-works-ev",
       title: "how we build",
       date: "Jan 13, '25",
