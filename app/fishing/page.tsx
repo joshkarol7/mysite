@@ -56,27 +56,19 @@ export default function Fishing() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease }}
         >
-          <Link href="/" className="text-caption font-mono text-secondary hover:text-accent transition-colors duration-300">
-            <span className="text-muted">{">"}</span> cd ~/home
+          <Link href="/" className="text-caption font-mono text-secondary hover:text-primary transition-colors duration-300">
+            ← back
           </Link>
         </motion.div>
 
         <motion.h1
-          className="text-h1 font-display mt-8"
+          className="text-h1 font-display mt-8 mb-12"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
           fishing
         </motion.h1>
-        <motion.p
-          className="mt-3 mb-12 text-body font-mono text-muted"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          a gallery of me holding fish, extremely proud of myself.
-        </motion.p>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
           {PHOTOS.map((_, i) => (
