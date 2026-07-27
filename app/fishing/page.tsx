@@ -127,7 +127,9 @@ export default function Fishing() {
           <div className="flex items-center gap-6 mt-4 text-caption font-mono text-muted">
             <span><span className="text-accent">{caught}</span> landed</span>
             <span>{total - caught} still chasing</span>
-            <span className="hidden sm:block tracking-widest">41.2712°N 72.3418°W</span>
+            <Link href="/library" className="ml-auto text-secondary hover:text-accent transition-colors duration-300">
+              plate archive →
+            </Link>
           </div>
         </motion.div>
 
