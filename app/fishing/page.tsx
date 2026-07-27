@@ -1,120 +1,151 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CAUGHT, WANT, PHOTOS, type Fish } from "./species";
 
 const ease = [0.14, 1, 0.34, 1] as const;
 
-type Fish = { slug: string; name: string; latin: string; w: number };
-
-// only species with a consistent COLOR plate — the sticker sheet
-const BOARD: Fish[] = [
-  { slug: "striped-bass", name: "Striped Bass", latin: "Morone saxatilis", w: 340 },
-  { slug: "bluefish", name: "Bluefish", latin: "Pomatomus saltatrix", w: 260 },
-  { slug: "largemouth-bass", name: "Largemouth Bass", latin: "Micropterus salmoides", w: 250 },
-  { slug: "tautog", name: "Tautog", latin: "Tautoga onitis", w: 210 },
-  { slug: "smallmouth-bass", name: "Smallmouth Bass", latin: "Micropterus dolomieu", w: 220 },
-  { slug: "black-sea-bass", name: "Black Sea Bass", latin: "Centropristis striata", w: 240 },
-  { slug: "bonito", name: "Bonito", latin: "Sarda sarda", w: 250 },
-  { slug: "scup", name: "Scup", latin: "Stenotomus chrysops", w: 175 },
-  { slug: "fluke", name: "Fluke", latin: "Paralichthys dentatus", w: 200 },
-];
-
-const CHASING: (Fish & { ghost?: boolean })[] = [
-  { slug: "giant-trevally", name: "Giant Trevally", latin: "Caranx ignobilis", w: 250 },
-  { slug: "sailfish", name: "Sailfish", latin: "Istiophorus platypterus", w: 300, ghost: true },
-];
-
-const OFFSHORE = ["Yellowfin Tuna", "Mahi Mahi", "False Albacore"];
-
-function Sticker({ f, i, ghost }: { f: Fish; i: number; ghost?: boolean }) {
+function Tile({
+  f,
+  onFocusFish,
+  dim,
+  i,
+}: {
+  f: Fish;
+  onFocusFish: (f: Fish) => void;
+  dim?: boolean;
+  i: number;
+}) {
   return (
-    <motion.figure
-      className="flex flex-col items-center text-center"
-      style={{ width: f.w, maxWidth: "44vw" }}
-      initial={{ opacity: 0, y: 22, scale: 0.96 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: (i % 7) * 0.06, duration: 0.6, ease }}
+    <motion.button
+      type="button"
+      onMouseEnter={() => onFocusFish(f)}
+      onFocus={() => onFocusFish(f)}
+      onClick={() => onFocusFish(f)}
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ delay: (i % 12) * 0.015, duration: 0.4, ease }}
+      className="group relative aspect-square rounded-[18px] overflow-hidden focus:outline-none
+                 focus-visible:ring-2 focus-visible:ring-[#c98a3a]"
+      style={{ background: "#e7e0d1", boxShadow: "0 1px 3px rgba(60,45,20,0.12)" }}
+      aria-label={f.name}
     >
-      <div className="flex items-end justify-center" style={{ height: f.w * 0.62 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/fish/cutout/${f.slug}.png`}
-          alt={f.name}
-          className={ghost ? "sticker sticker-ghost" : "sticker"}
-          style={{ width: "100%", height: "auto", objectFit: "contain" }}
-        />
-      </div>
-      <figcaption className="mt-3">
-        <span className="poster-serif block text-[0.95rem] font-semibold tracking-[0.12em] uppercase leading-none">
-          {f.name}
-        </span>
-        <span className="poster-serif block italic text-[0.72rem] opacity-60 mt-1">
-          {f.latin}
-        </span>
-      </figcaption>
-    </motion.figure>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={f.img}
+        alt={f.name}
+        loading="lazy"
+        className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.08] ${
+          dim ? "grayscale-[0.4]" : ""
+        }`}
+        style={{ opacity: dim ? 0.72 : 1 }}
+      />
+      <div className="absolute inset-0 rounded-[18px] ring-1 ring-inset ring-black/5 group-hover:ring-black/10 transition-all duration-300" />
+    </motion.button>
   );
 }
 
 export default function Fishing() {
+  const [focus, setFocus] = useState<{ f: Fish; got: boolean }>({ f: CAUGHT[0], got: true });
+
   return (
-    <div className="poster relative min-h-screen">
-      <div className="relative z-10 px-5 md:px-10 lg:px-16 py-12 md:py-16 max-w-6xl mx-auto">
+    <div className="min-h-screen" style={{ background: "#f4f1ea", color: "#2a251d" }}>
+      <div className="max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-12">
         <Link
           href="/"
-          className="poster-serif text-[0.8rem] tracking-wider text-[#7a6f57] hover:text-[#26221b] transition-colors"
+          className="poster-serif text-[0.85rem] tracking-wide text-[#8a7f6a] hover:text-[#2a251d] transition-colors"
         >
           ← back home
         </Link>
 
-        {/* Poster header */}
-        <motion.header
-          className="text-center mt-8 mb-4"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease }}
-        >
-          <p className="poster-serif tracking-[0.4em] text-[0.7rem] uppercase text-[#7a6f57]">
-            Landed by
-          </p>
-          <h1 className="poster-serif font-bold uppercase leading-[0.9] tracking-tight mt-2"
-              style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)" }}>
-            Josh Karol
-          </h1>
-          <p className="poster-serif italic text-[0.95rem] text-[#5c5340] mt-2">
-            gamefish of Long Island Sound &amp; beyond
-          </p>
-          <div className="rule-dots max-w-md mx-auto mt-5 text-[#8a7c5a]" />
-        </motion.header>
+        {/* Big focus display — the name is the hero (Herb-style) */}
+        <div className="sticky top-0 z-20 -mx-5 md:-mx-8 px-5 md:px-8 pt-6 pb-5 mb-2"
+             style={{ background: "linear-gradient(#f4f1ea 78%, rgba(244,241,234,0))" }}>
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
+              The Catch
+            </span>
+            <span className="poster-serif text-[0.72rem] tracking-[0.2em] uppercase text-[#a2977f]">
+              {CAUGHT.length} landed · {WANT.length} wanted
+            </span>
+          </div>
+          <div className="min-h-[4.5rem] md:min-h-[5.5rem] mt-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={focus.f.name}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease }}
+              >
+                <h1 className="poster-serif font-bold leading-[0.95] tracking-tight"
+                    style={{ fontSize: "clamp(2.2rem, 6vw, 4.2rem)" }}>
+                  {focus.f.name}
+                </h1>
+                <p className="poster-serif italic text-[#7b7059] mt-1 text-[0.95rem] md:text-[1.05rem]">
+                  {focus.f.latin}
+                  {focus.f.where ? ` · ${focus.f.where}` : ""}
+                  {!focus.got && <span className="not-italic tracking-widest text-[#c98a3a]"> · still chasing</span>}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
 
-        {/* The board */}
-        <div className="flex flex-wrap items-end justify-center gap-x-6 gap-y-10 md:gap-x-10 py-10">
-          {BOARD.map((f, i) => (
-            <Sticker key={f.slug} f={f} i={i} />
+        {/* Caught */}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-9 gap-2.5 md:gap-3">
+          {CAUGHT.map((f, i) => (
+            <Tile key={f.name} f={f} i={i} onFocusFish={(x) => setFocus({ f: x, got: true })} />
           ))}
         </div>
 
-        {/* Still chasing */}
-        <div className="rule-dots max-w-md mx-auto text-[#8a7c5a]" />
-        <p className="poster-serif text-center tracking-[0.35em] text-[0.7rem] uppercase text-[#7a6f57] mt-6 mb-2">
-          still chasing
-        </p>
-        <div className="flex flex-wrap items-end justify-center gap-x-10 gap-y-10 py-8">
-          {CHASING.map((f, i) => (
-            <Sticker key={f.slug} f={f} i={i} ghost={f.ghost} />
+        {/* Wanted */}
+        <div className="flex items-center gap-3 mt-14 mb-4">
+          <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
+            On the list
+          </span>
+          <span className="h-px flex-1" style={{ background: "#ddd4c1" }} />
+        </div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-9 gap-2.5 md:gap-3">
+          {WANT.map((f, i) => (
+            <Tile key={f.name} f={f} i={i} dim onFocusFish={(x) => setFocus({ f: x, got: false })} />
           ))}
         </div>
 
-        {/* Honest footnote */}
-        <div className="rule-dots max-w-md mx-auto text-[#8a7c5a] mt-4" />
-        <p className="poster-serif text-center text-[0.8rem] text-[#5c5340] max-w-lg mx-auto mt-6 leading-relaxed">
-          <span className="italic">also landed, offshore</span> — {OFFSHORE.join(", ")} —
-          but no antique color plate exists for these yet, so they&apos;re off the wall for now.
-        </p>
-        <p className="poster-serif text-center text-[0.68rem] italic text-[#8a7c5a]/80 mt-8">
-          plates after S.F. Denton · public domain · a work in progress
+        {/* From the trips — real photos, small + square */}
+        <div className="flex items-center gap-3 mt-16 mb-4">
+          <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
+            From the trips
+          </span>
+          <span className="h-px flex-1" style={{ background: "#ddd4c1" }} />
+        </div>
+        <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2.5">
+          {PHOTOS.map((src, i) => (
+            <motion.div
+              key={src}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: (i % 10) * 0.02, duration: 0.4, ease }}
+              className="group relative aspect-square rounded-2xl overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(60,45,20,0.12)" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt="fishing"
+                loading="lazy"
+                className="w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="poster-serif text-center text-[0.7rem] italic text-[#a2977f] mt-16">
+          placeholder list · plates after S.F. Denton &amp; Audubon, public domain
         </p>
       </div>
     </div>
