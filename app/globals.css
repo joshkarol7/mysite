@@ -288,6 +288,45 @@ body {
   background: radial-gradient(90% 60% at 50% -10%, rgba(255,244,214,0.22), transparent 60%);
 }
 
+/* ============================================
+   GAMEFISH POSTER — die-cut sticker sheet
+   ============================================ */
+
+.poster {
+  background:
+    radial-gradient(120% 90% at 50% 0%, #fbf7ee 0%, #f1ead9 60%, #e9e0cc 100%);
+  color: #26221b;
+}
+.poster-serif {
+  font-family: Georgia, "Times New Roman", "Iowan Old Style", serif;
+}
+.rule-dots {
+  height: 3px;
+  background-image: radial-gradient(currentColor 1px, transparent 1.4px);
+  background-size: 10px 3px;
+  background-repeat: repeat-x;
+  background-position: center;
+  opacity: 0.55;
+}
+/* die-cut sticker: shadow hugs the transparent silhouette */
+.sticker {
+  filter: drop-shadow(0 5px 6px rgba(40, 30, 12, 0.28));
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1),
+              filter 0.4s ease;
+  will-change: transform;
+}
+.sticker:hover {
+  transform: translateY(-6px) scale(1.04) rotate(-0.5deg);
+  filter: drop-shadow(0 14px 16px rgba(40, 30, 12, 0.34));
+}
+.sticker-ghost {
+  filter: grayscale(0.2) opacity(0.5) drop-shadow(0 3px 4px rgba(40,30,12,0.15));
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticker { transition: none; }
+  .sticker:hover { transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .shimmer::after,
   .cursor-blink {

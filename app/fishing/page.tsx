@@ -1,155 +1,120 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { SPECIES, type Species } from "./data";
 
 const ease = [0.14, 1, 0.34, 1] as const;
-const snappy = [0.175, 0.885, 0.32, 1.1] as const;
 
-const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+type Fish = { slug: string; name: string; latin: string; w: number };
 
-// deterministic hand-hung tilts + mat aspect variety
-const TILT = [-1.6, 1.2, -0.8, 1.8, -1.3, 0.9, -1.9, 1.4, -0.6, 1.1, -1.5, 0.7, -1.2, 1.6];
-const ASPECT = ["3 / 2", "4 / 3", "3 / 2", "5 / 4", "3 / 2", "3 / 2", "4 / 3", "3 / 2", "5 / 4", "3 / 2", "4 / 3", "3 / 2", "3 / 2", "4 / 3"];
-
-// caught first (home team leads), then the ghosts
-const ORDER: Species[] = [
-  ...SPECIES.filter((s) => s.caught),
-  ...SPECIES.filter((s) => !s.caught),
+// only species with a consistent COLOR plate — the sticker sheet
+const BOARD: Fish[] = [
+  { slug: "striped-bass", name: "Striped Bass", latin: "Morone saxatilis", w: 340 },
+  { slug: "bluefish", name: "Bluefish", latin: "Pomatomus saltatrix", w: 260 },
+  { slug: "largemouth-bass", name: "Largemouth Bass", latin: "Micropterus salmoides", w: 250 },
+  { slug: "tautog", name: "Tautog", latin: "Tautoga onitis", w: 210 },
+  { slug: "smallmouth-bass", name: "Smallmouth Bass", latin: "Micropterus dolomieu", w: 220 },
+  { slug: "black-sea-bass", name: "Black Sea Bass", latin: "Centropristis striata", w: 240 },
+  { slug: "bonito", name: "Bonito", latin: "Sarda sarda", w: 250 },
+  { slug: "scup", name: "Scup", latin: "Stenotomus chrysops", w: 175 },
+  { slug: "fluke", name: "Fluke", latin: "Paralichthys dentatus", w: 200 },
 ];
 
-const frameIn = {
-  hidden: (i: number) => ({ opacity: 0, y: 26, rotate: TILT[i % TILT.length] }),
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    rotate: TILT[i % TILT.length],
-    transition: { delay: (i % 6) * 0.06, duration: 0.6, ease },
-  }),
-};
+const CHASING: (Fish & { ghost?: boolean })[] = [
+  { slug: "giant-trevally", name: "Giant Trevally", latin: "Caranx ignobilis", w: 250 },
+  { slug: "sailfish", name: "Sailfish", latin: "Istiophorus platypterus", w: 300, ghost: true },
+];
 
-function Frame({ s, i }: { s: Species; i: number }) {
-  const aspect = ASPECT[i % ASPECT.length];
+const OFFSHORE = ["Yellowfin Tuna", "Mahi Mahi", "False Albacore"];
+
+function Sticker({ f, i, ghost }: { f: Fish; i: number; ghost?: boolean }) {
   return (
     <motion.figure
-      custom={i}
-      variants={frameIn}
-      whileHover={{ y: -10, rotate: 0, scale: 1.015, transition: { duration: 0.35, ease: snappy } }}
-      className="group relative mb-8 break-inside-avoid cursor-default"
-      style={{ transformOrigin: "center bottom" }}
+      className="flex flex-col items-center text-center"
+      style={{ width: f.w, maxWidth: "44vw" }}
+      initial={{ opacity: 0, y: 22, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay: (i % 7) * 0.06, duration: 0.6, ease }}
     >
-      {/* hanging point */}
-      <span className="absolute -top-2 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-[#1a1a17] shadow-[0_1px_2px_rgba(0,0,0,0.8)] z-10" />
-
-      <div className="frame relative">
-        <div className="picture-light absolute -inset-2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded" />
-        <div className="mat">
-          <div
-            className={`relative overflow-hidden ${s.caught ? "" : "grid place-items-center"}`}
-            style={{ aspectRatio: aspect, background: s.caught ? "#e8e1d1" : "#e2dbc7" }}
-          >
-            {s.caught ? (
-              <Image
-                src={`/fish/${slug(s.name)}.jpg`}
-                alt={`${s.name} — antique plate`}
-                fill
-                sizes="(max-width:640px) 90vw, (max-width:1280px) 45vw, 30vw"
-                className="object-contain p-1 saturate-[0.9] group-hover:saturate-100 transition-[filter] duration-500"
-                style={{ filter: "sepia(0.06)" }}
-              />
-            ) : (
-              <>
-                {/* the one that got away — faint ghost, blooms on hover */}
-                <Image
-                  src={`/fish/${slug(s.name)}.jpg`}
-                  alt=""
-                  fill
-                  sizes="30vw"
-                  className="object-contain p-1 opacity-[0.10] saturate-0 group-hover:opacity-40 transition-opacity duration-700"
-                />
-                <span className="relative text-caption font-mono tracking-[0.3em] text-[#8a7c5a] uppercase">
-                  still chasing
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* engraved brass nameplate */}
-          <div className="nameplate mt-3 px-3 py-1.5 text-center">
-            <span className="block font-display leading-none text-[0.8rem] tracking-[0.14em] uppercase">
-              {s.name}
-            </span>
-            <span className="block font-mono italic text-[0.6rem] leading-tight mt-0.5 opacity-80">
-              {s.latin}
-              {s.where ? ` · ${s.where}` : ""}
-            </span>
-          </div>
-        </div>
+      <div className="flex items-end justify-center" style={{ height: f.w * 0.62 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/fish/cutout/${f.slug}.png`}
+          alt={f.name}
+          className={ghost ? "sticker sticker-ghost" : "sticker"}
+          style={{ width: "100%", height: "auto", objectFit: "contain" }}
+        />
       </div>
+      <figcaption className="mt-3">
+        <span className="poster-serif block text-[0.95rem] font-semibold tracking-[0.12em] uppercase leading-none">
+          {f.name}
+        </span>
+        <span className="poster-serif block italic text-[0.72rem] opacity-60 mt-1">
+          {f.latin}
+        </span>
+      </figcaption>
     </motion.figure>
   );
 }
 
 export default function Fishing() {
-  const caught = SPECIES.filter((s) => s.caught).length;
-  const total = SPECIES.length;
-
   return (
-    <div className="wall relative min-h-screen">
-      <div className="relative z-10 px-5 md:px-12 lg:px-16 py-14 md:py-20 max-w-6xl mx-auto">
-        {/* Breadcrumb */}
-        <motion.div
-          className="mb-10"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, ease }}
+    <div className="poster relative min-h-screen">
+      <div className="relative z-10 px-5 md:px-10 lg:px-16 py-12 md:py-16 max-w-6xl mx-auto">
+        <Link
+          href="/"
+          className="poster-serif text-[0.8rem] tracking-wider text-[#7a6f57] hover:text-[#26221b] transition-colors"
         >
-          <Link href="/" className="text-caption font-mono text-secondary hover:text-accent transition-colors duration-300">
-            <span className="text-muted">{">"}</span> cd ~/home
-          </Link>
-        </motion.div>
+          ← back home
+        </Link>
 
-        {/* Museum wall label */}
-        <motion.div
-          className="mb-14 border border-border/70 bg-surface/30 backdrop-blur-sm px-6 py-5 max-w-xl"
+        {/* Poster header */}
+        <motion.header
+          className="text-center mt-8 mb-4"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease }}
+          transition={{ duration: 0.7, ease }}
         >
-          <span className="text-caption font-mono text-accent-dim block mb-3">02 · fishing</span>
-          <h1 className="text-h2 font-display text-primary leading-tight">The Karol Collection</h1>
-          <p className="text-body font-mono text-secondary mt-2 leading-relaxed">
-            Specimens landed on Long Island Sound &amp; beyond — and the two still hanging in
-            empty frames until the day they aren&apos;t.
+          <p className="poster-serif tracking-[0.4em] text-[0.7rem] uppercase text-[#7a6f57]">
+            Landed by
           </p>
-          <div className="flex items-center gap-6 mt-4 text-caption font-mono text-muted">
-            <span><span className="text-accent">{caught}</span> landed</span>
-            <span>{total - caught} still chasing</span>
-            <Link href="/library" className="ml-auto text-secondary hover:text-accent transition-colors duration-300">
-              plate archive →
-            </Link>
-          </div>
-        </motion.div>
+          <h1 className="poster-serif font-bold uppercase leading-[0.9] tracking-tight mt-2"
+              style={{ fontSize: "clamp(2.5rem, 7vw, 5rem)" }}>
+            Josh Karol
+          </h1>
+          <p className="poster-serif italic text-[0.95rem] text-[#5c5340] mt-2">
+            gamefish of Long Island Sound &amp; beyond
+          </p>
+          <div className="rule-dots max-w-md mx-auto mt-5 text-[#8a7c5a]" />
+        </motion.header>
 
-        {/* Salon wall */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ staggerChildren: 0.05 }}
-          className="columns-1 sm:columns-2 xl:columns-3 gap-8"
-        >
-          {ORDER.map((s, i) => (
-            <Frame key={s.name} s={s} i={i} />
+        {/* The board */}
+        <div className="flex flex-wrap items-end justify-center gap-x-6 gap-y-10 md:gap-x-10 py-10">
+          {BOARD.map((f, i) => (
+            <Sticker key={f.slug} f={f} i={i} />
           ))}
-        </motion.div>
+        </div>
 
-        {/* Credit */}
-        <p className="mt-14 text-caption font-mono text-muted/70 normal-case tracking-normal max-w-2xl">
-          plates: S.F. Denton &amp; contemporaries, via the Freshwater and Marine Image Bank
-          (Wikimedia Commons) — public domain.
+        {/* Still chasing */}
+        <div className="rule-dots max-w-md mx-auto text-[#8a7c5a]" />
+        <p className="poster-serif text-center tracking-[0.35em] text-[0.7rem] uppercase text-[#7a6f57] mt-6 mb-2">
+          still chasing
+        </p>
+        <div className="flex flex-wrap items-end justify-center gap-x-10 gap-y-10 py-8">
+          {CHASING.map((f, i) => (
+            <Sticker key={f.slug} f={f} i={i} ghost={f.ghost} />
+          ))}
+        </div>
+
+        {/* Honest footnote */}
+        <div className="rule-dots max-w-md mx-auto text-[#8a7c5a] mt-4" />
+        <p className="poster-serif text-center text-[0.8rem] text-[#5c5340] max-w-lg mx-auto mt-6 leading-relaxed">
+          <span className="italic">also landed, offshore</span> — {OFFSHORE.join(", ")} —
+          but no antique color plate exists for these yet, so they&apos;re off the wall for now.
+        </p>
+        <p className="poster-serif text-center text-[0.68rem] italic text-[#8a7c5a]/80 mt-8">
+          plates after S.F. Denton · public domain · a work in progress
         </p>
       </div>
     </div>
