@@ -79,13 +79,13 @@ export const WANT: Fish[] = [
 export type Shot = { src: string; caption: string };
 
 export const PHOTOS: Shot[] = [
-  { src: "/fishing/IMG_4294.JPG", caption: "party-boat tog, dinner secured" },
-  { src: "/fishing/B42F2120-BDBF-4F80-9416-1C7D86DD6299.jpg", caption: "you'd scream too" },
-  { src: "/fishing/3E0C9410-3FD2-4AE6-8EC4-6A89F1732C4D.jpg", caption: "reservoir donkey, real casual about it" },
-  { src: "/fishing/E52F1BD8-E01B-45E5-85E4-71EAD7D9617E.jpg", caption: "doormat fluke, college era" },
-  { src: "/fishing/FullSizeRender.jpg", caption: "fall-run striper on the swing" },
-  { src: "/fishing/IMG_1645.jpg", caption: "3am, zero regrets" },
-  { src: "/fishing/IMG_1486.jpg", caption: "double up with the boys, soaked through" },
-  { src: "/fishing/704A9654-9C3D-444D-8BB1-617852E6CAA0.jpg", caption: "kept the shades on for the pike" },
-  { src: "/fishing/FullSizeRender.jpeg", caption: "cold water, hot laker" },
+  { src: "/fishing/IMG_4294.JPG", caption: "Tog off of Rikers" },
+  { src: "/fishing/B42F2120-BDBF-4F80-9416-1C7D86DD6299.jpg", caption: "Ate ceviche, got food poisoning" },
+  { src: "/fishing/3E0C9410-3FD2-4AE6-8EC4-6A89F1732C4D.jpg", caption: "Stachin'" },
+  { src: "/fishing/E52F1BD8-E01B-45E5-85E4-71EAD7D9617E.jpg", caption: "Catch n cook" },
+  { src: "/fishing/FullSizeRender.jpg", caption: "Proudest moment" },
+  { src: "/fishing/IMG_1645.jpg", caption: "Big boi" },
+  { src: "/fishing/IMG_1486.jpg", caption: "Doubled up with brother" },
+  { src: "/fishing/704A9654-9C3D-444D-8BB1-617852E6CAA0.jpg", caption: "North Dakota ballin'" },
+  { src: "/fishing/FullSizeRender.jpeg", caption: "Combat fishing in Pulaski" },
 ];
