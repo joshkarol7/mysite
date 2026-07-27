@@ -6,47 +6,60 @@ import { motion } from "framer-motion";
 const ease = [0.14, 1, 0.34, 1] as const;
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 14 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.07, duration: 0.6, ease },
+    transition: { delay: i * 0.06, duration: 0.55, ease },
   }),
 };
 
-const stagger = {
-  visible: { transition: { staggerChildren: 0.07 } },
-};
+const stagger = { visible: { transition: { staggerChildren: 0.06 } } };
 
-function Hero() {
+const pages = [
+  { href: "/about", label: "about", desc: "the short version" },
+  { href: "/fishing", label: "fishing", desc: "species log + photos" },
+  { href: "/travel", label: "travel", desc: "somewhere out there" },
+];
+
+export default function Home() {
   return (
-    <section className="relative min-h-[92vh] flex items-center">
-      <div className="max-w-3xl mx-auto px-6 w-full">
-        <motion.div initial="hidden" animate="visible" variants={stagger}>
-          <motion.div
-            className="flex items-center gap-3 mb-8 text-caption font-mono text-secondary"
-            variants={fadeUp}
-            custom={0}
-          >
+    <main className="h-[100svh] overflow-hidden">
+      <motion.div
+        className="h-full max-w-4xl mx-auto px-6 md:px-10 py-8 md:py-12
+                   flex flex-col justify-between"
+        initial="hidden"
+        animate="visible"
+        variants={stagger}
+      >
+        {/* Top meta */}
+        <motion.div
+          className="flex items-center justify-between text-caption font-mono"
+          variants={fadeUp}
+          custom={0}
+        >
+          <span className="flex items-center gap-2.5 text-secondary">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             </span>
-            <span>New York · 40.7128°N 74.0060°W</span>
-          </motion.div>
+            New York · 40.7128°N 74.0060°W
+          </span>
+          <span className="text-muted hidden sm:block">josh karol — index</span>
+        </motion.div>
 
+        {/* Identity */}
+        <div className="py-4">
           <motion.h1
-            className="text-hero font-display text-primary mb-6"
+            className="text-h1 font-display text-primary mb-5 leading-[0.95]"
             variants={fadeUp}
             custom={1}
           >
-            Josh
-            <br />
-            Karol
+            Josh Karol
           </motion.h1>
 
           <motion.p
-            className="text-h3 font-mono text-secondary mb-10 max-w-lg leading-relaxed"
+            className="text-body md:text-h3 font-mono text-secondary mb-6 max-w-xl leading-relaxed"
             variants={fadeUp}
             custom={2}
           >
@@ -92,147 +105,45 @@ function Hero() {
               email
             </a>
           </motion.div>
-        </motion.div>
-      </div>
-
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-      >
-        <span className="text-caption font-mono text-muted">index</span>
-        <span className="text-muted text-sm">↓</span>
-      </motion.div>
-    </section>
-  );
-}
-
-function IndexRow({
-  number,
-  href,
-  label,
-  desc,
-  index,
-}: {
-  number: string;
-  href: string;
-  label: string;
-  desc: string;
-  index: number;
-}) {
-  return (
-    <motion.div variants={fadeUp} custom={index}>
-      <Link
-        href={href}
-        className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-5 py-5
-                   border-t border-border hover:border-accent-dim transition-colors duration-300"
-      >
-        <span className="text-caption font-mono text-accent-dim">{number}</span>
-        <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-h3 font-display text-primary group-hover:text-accent transition-colors duration-300">
-            {label}
-          </span>
-          <span className="text-caption font-mono text-muted normal-case tracking-normal">
-            {desc}
-          </span>
-        </span>
-        <span className="text-secondary text-sm group-hover:translate-x-1 group-hover:text-accent transition-all duration-300">
-          →
-        </span>
-      </Link>
-    </motion.div>
-  );
-}
-
-function IndexSection() {
-  const rows = [
-    { href: "/about", label: "about", desc: "the short version" },
-    { href: "/fishing", label: "fishing", desc: "species log + photos" },
-    { href: "/travel", label: "travel", desc: "somewhere out there" },
-  ];
-
-  return (
-    <section className="relative py-20 md:py-28">
-      <div className="max-w-3xl mx-auto px-6">
-        <motion.div
-          className="flex items-baseline justify-between mb-6"
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5, ease }}
-        >
-          <span className="text-caption font-mono text-secondary">index</span>
-          <span className="text-caption font-mono text-muted">
-            {rows.length.toString().padStart(2, "0")} pages
-          </span>
-        </motion.div>
-
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          variants={stagger}
-          className="border-b border-border"
-        >
-          {rows.map((row, i) => (
-            <IndexRow
-              key={row.href}
-              number={(i + 1).toString().padStart(2, "0")}
-              href={row.href}
-              label={row.label}
-              desc={row.desc}
-              index={i}
-            />
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="relative py-16 border-t border-border">
-      <div className="max-w-3xl mx-auto px-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-body font-mono">
-          <a
-            href="https://www.linkedin.com/in/josh-karol-4b1a97143/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link-underline text-secondary"
-          >
-            linkedin
-          </a>
-          <a
-            href="https://github.com/joshkarol7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link-underline text-secondary"
-          >
-            github
-          </a>
-          <a
-            href="mailto:joshkarol98@gmail.com"
-            className="link-underline text-secondary"
-          >
-            email
-          </a>
         </div>
-        <p className="text-caption font-mono text-muted">
-          built with next + tailwind
-        </p>
-      </div>
-    </footer>
-  );
-}
 
-export default function Home() {
-  return (
-    <main>
-      <Hero />
-      <IndexSection />
-      <Footer />
+        {/* Index + colophon */}
+        <div>
+          <div className="border-t border-border">
+            {pages.map((page, i) => (
+              <motion.div key={page.href} variants={fadeUp} custom={4 + i}>
+                <Link
+                  href={page.href}
+                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-3
+                             border-b border-border hover:border-accent-dim transition-colors duration-300"
+                >
+                  <span className="text-caption font-mono text-accent-dim">
+                    {(i + 1).toString().padStart(2, "0")}
+                  </span>
+                  <span className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                    <span className="text-h3 font-display text-primary group-hover:text-accent transition-colors duration-300">
+                      {page.label}
+                    </span>
+                    <span className="text-caption font-mono text-muted normal-case tracking-normal">
+                      {page.desc}
+                    </span>
+                  </span>
+                  <span className="text-secondary text-sm group-hover:translate-x-1 group-hover:text-accent transition-all duration-300">
+                    →
+                  </span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+          <motion.p
+            className="mt-4 text-caption font-mono text-muted"
+            variants={fadeUp}
+            custom={7}
+          >
+            built with next + tailwind
+          </motion.p>
+        </div>
+      </motion.div>
     </main>
   );
 }
