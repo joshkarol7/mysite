@@ -6,26 +6,24 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { PHOTOS } from "./species";
 
 const ease = [0.14, 1, 0.34, 1] as const;
-const TILT = [-2.5, 1.8, -1.2, 2.4, -2, 1.4, -1.8, 2.2, -1.5, 1.6];
 
 function Shot({ i, onOpen }: { i: number; onOpen: (i: number) => void }) {
   const reduce = useReducedMotion();
   const p = PHOTOS[i];
-  const tilt = reduce ? 0 : TILT[i % TILT.length];
   return (
     <motion.figure
       className="mb-8 break-inside-avoid"
-      initial={{ opacity: 0, y: 40, rotate: tilt * 1.6, scale: 0.92 }}
-      whileInView={{ opacity: 1, y: 0, rotate: tilt, scale: 1 }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      transition={{ type: "spring", stiffness: 120, damping: 12, mass: 0.6 }}
+      transition={{ duration: 0.55, ease, delay: (i % 3) * 0.08 }}
     >
       <motion.button
         type="button"
         onClick={() => onOpen(i)}
-        whileHover={reduce ? undefined : { rotate: 0, scale: 1.035, y: -6 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 300, damping: 18 }}
+        whileHover={reduce ? undefined : { scale: 1.02, y: -5 }}
+        whileTap={{ scale: 0.99 }}
+        transition={{ duration: 0.35, ease }}
         className="group block w-full text-left focus:outline-none"
       >
         <div className="relative overflow-hidden rounded-2xl bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
@@ -35,7 +33,7 @@ function Shot({ i, onOpen }: { i: number; onOpen: (i: number) => void }) {
               src={p.src}
               alt={p.caption}
               loading="lazy"
-              className="w-full h-auto block group-hover:scale-[1.05] transition-transform duration-[600ms]"
+              className="w-full h-auto block group-hover:scale-[1.03] transition-transform duration-[600ms]"
             />
           </motion.div>
           <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5 group-hover:ring-accent/25 transition-all duration-300" />
@@ -66,9 +64,9 @@ export default function Fishing() {
 
         <motion.h1
           className="text-h1 font-display mt-8"
-          initial={{ opacity: 0, y: 20, rotate: -2 }}
-          animate={{ opacity: 1, y: 0, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 120, damping: 11 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease }}
         >
           fishing
         </motion.h1>
