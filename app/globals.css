@@ -6,21 +6,21 @@
    ============================================ */
 
 @theme inline {
-  /* Color Palette */
-  --color-deep: #060809;
-  --color-surface: #0c1014;
-  --color-elevated: #141a1f;
-  --color-border: #1c252d;
-  --color-primary: #e2e8e0;
-  --color-secondary: #5a6b62;
-  --color-muted: #3a4840;
-  --color-accent: #4a9e7e;
-  --color-accent-dim: #2d6b54;
-  --color-accent-bright: #5cc49a;
-  --color-topo: #111a16;
-  --color-topo-bright: #1a2820;
-  --color-glow: rgba(74, 158, 126, 0.06);
-  --color-glow-strong: rgba(74, 158, 126, 0.12);
+  /* Color Palette — off-black + eggshell, two-tone */
+  --color-deep: #0b0a08;
+  --color-surface: #131210;
+  --color-elevated: #1b1a16;
+  --color-border: #272520;
+  --color-primary: #ece5d3;
+  --color-secondary: #9a9384;
+  --color-muted: #5e5a4e;
+  --color-accent: #ece5d3;
+  --color-accent-dim: #9a9384;
+  --color-accent-bright: #f5efdf;
+  --color-topo: #17160f;
+  --color-topo-bright: #211f16;
+  --color-glow: rgba(236, 229, 211, 0.04);
+  --color-glow-strong: rgba(236, 229, 211, 0.08);
 
   /* Typography */
   --font-display: var(--font-display);

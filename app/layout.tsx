@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { SiteBackground } from "./components/SiteBackground";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -30,7 +29,6 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased bg-deep text-primary`}
       >
-        <SiteBackground />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

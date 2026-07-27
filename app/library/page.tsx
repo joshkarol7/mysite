@@ -100,8 +100,8 @@ export default function Library() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease }}
         >
-          <Link href="/fishing" className="text-caption font-mono text-secondary hover:text-accent transition-colors duration-300">
-            <span className="text-muted">{">"}</span> cd ~/fishing
+          <Link href="/fishing" className="text-caption font-mono text-secondary hover:text-primary transition-colors duration-300">
+            ← back
           </Link>
         </motion.div>
 

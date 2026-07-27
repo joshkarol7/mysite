@@ -28,8 +28,8 @@ export default function About() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: [0.14, 1, 0.34, 1] }}
         >
-          <Link href="/" className="text-caption font-mono text-secondary hover:text-accent transition-colors duration-300">
-            <span className="text-muted">{'>'}</span> cd ~/home
+          <Link href="/" className="text-caption font-mono text-secondary hover:text-primary transition-colors duration-300">
+            ← back
           </Link>
         </motion.div>
 
