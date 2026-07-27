@@ -3,123 +3,102 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { SPECIES, TIERS, type Species } from "./data";
+import { SPECIES, type Species } from "./data";
 
 const ease = [0.14, 1, 0.34, 1] as const;
 const snappy = [0.175, 0.885, 0.32, 1.1] as const;
 
 const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-const tierOf = (t?: string) => TIERS.find((x) => x.key === t);
 
-const caught = SPECIES.filter((s) => s.caught);
-const rank: Record<string, number> = { S: 0, A: 1, B: 2, C: 3 };
-caught.sort((a, b) => (rank[a.tier ?? "C"] - rank[b.tier ?? "C"]) || a.name.localeCompare(b.name));
-const wishlist = SPECIES.filter((s) => !s.caught);
+// deterministic hand-hung tilts + mat aspect variety
+const TILT = [-1.6, 1.2, -0.8, 1.8, -1.3, 0.9, -1.9, 1.4, -0.6, 1.1, -1.5, 0.7, -1.2, 1.6];
+const ASPECT = ["3 / 2", "4 / 3", "3 / 2", "5 / 4", "3 / 2", "3 / 2", "4 / 3", "3 / 2", "5 / 4", "3 / 2", "4 / 3", "3 / 2", "3 / 2", "4 / 3"];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
+// caught first (home team leads), then the ghosts
+const ORDER: Species[] = [
+  ...SPECIES.filter((s) => s.caught),
+  ...SPECIES.filter((s) => !s.caught),
+];
+
+const frameIn = {
+  hidden: (i: number) => ({ opacity: 0, y: 26, rotate: TILT[i % TILT.length] }),
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.05, duration: 0.55, ease },
+    rotate: TILT[i % TILT.length],
+    transition: { delay: (i % 6) * 0.06, duration: 0.6, ease },
   }),
 };
 
-function Plate({ s, index }: { s: Species; index: number }) {
-  const tier = tierOf(s.tier);
+function Frame({ s, i }: { s: Species; i: number }) {
+  const aspect = ASPECT[i % ASPECT.length];
   return (
     <motion.figure
-      custom={index}
-      variants={fadeUp}
-      whileHover={{ y: -6, transition: { duration: 0.3, ease: snappy } }}
-      className="group relative flex flex-col"
+      custom={i}
+      variants={frameIn}
+      whileHover={{ y: -10, rotate: 0, scale: 1.015, transition: { duration: 0.35, ease: snappy } }}
+      className="group relative mb-8 break-inside-avoid cursor-default"
+      style={{ transformOrigin: "center bottom" }}
     >
-      <div
-        className={`relative aspect-[3/2] overflow-hidden rounded-lg border ${
-          s.caught ? "border-border" : "border-dashed border-secondary/50"
-        }`}
-        style={{ background: "#e8e1d1" }}
-      >
-        <Image
-          src={`/fish/${slug(s.name)}.jpg`}
-          alt={`${s.name} — antique plate`}
-          fill
-          sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 260px"
-          className={`object-contain p-1.5 transition-all duration-500 ${
-            s.caught
-              ? "saturate-[0.92] group-hover:saturate-110 group-hover:scale-[1.03]"
-              : "saturate-[0.45] opacity-80 group-hover:saturate-100 group-hover:opacity-100 group-hover:scale-[1.03]"
-          }`}
-          style={{ filter: "sepia(0.06)" }}
-        />
-        {/* index + tier / want tag */}
-        <span className="absolute left-2 top-2 text-caption font-mono text-deep/50">
-          {(index + 1).toString().padStart(2, "0")}
-        </span>
-        {s.caught ? (
-          tier && (
-            <span
-              className="absolute right-2 top-2 h-6 w-6 grid place-items-center rounded-full text-caption font-display leading-none"
-              style={{ color: "#2a2118", background: `${tier.color}`, boxShadow: `0 2px 10px ${tier.glow}` }}
-              title={tier.label}
-            >
-              {tier.key}
-            </span>
-          )
-        ) : (
-          <span className="absolute right-2 top-2 text-caption font-mono text-deep/70 bg-[#e8e1d1]/80 border border-deep/20 rounded px-1.5 py-px leading-none">
-            want one
-          </span>
-        )}
-      </div>
+      {/* hanging point */}
+      <span className="absolute -top-2 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-[#1a1a17] shadow-[0_1px_2px_rgba(0,0,0,0.8)] z-10" />
 
-      <figcaption className="mt-3 flex items-baseline justify-between gap-3">
-        <span className="min-w-0">
-          <span className={`block text-body font-display leading-tight ${s.caught ? "text-primary" : "text-secondary"}`}>
-            {s.name}
-          </span>
-          <span className="block text-caption font-mono italic normal-case tracking-normal text-muted truncate">
-            {s.latin}
-          </span>
-        </span>
-        <span className="shrink-0 text-right">
-          <span className="block text-caption font-mono text-secondary">{s.water}</span>
-          {s.where && (
-            <span className="block text-caption font-mono text-muted normal-case tracking-normal">{s.where}</span>
-          )}
-        </span>
-      </figcaption>
-      {s.note && (
-        <span className="mt-1 block text-caption font-mono normal-case tracking-normal text-muted/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          — {s.note}
-        </span>
-      )}
+      <div className="frame relative">
+        <div className="picture-light absolute -inset-2 -top-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded" />
+        <div className="mat">
+          <div
+            className={`relative overflow-hidden ${s.caught ? "" : "grid place-items-center"}`}
+            style={{ aspectRatio: aspect, background: s.caught ? "#e8e1d1" : "#e2dbc7" }}
+          >
+            {s.caught ? (
+              <Image
+                src={`/fish/${slug(s.name)}.jpg`}
+                alt={`${s.name} — antique plate`}
+                fill
+                sizes="(max-width:640px) 90vw, (max-width:1280px) 45vw, 30vw"
+                className="object-contain p-1 saturate-[0.9] group-hover:saturate-100 transition-[filter] duration-500"
+                style={{ filter: "sepia(0.06)" }}
+              />
+            ) : (
+              <>
+                {/* the one that got away — faint ghost, blooms on hover */}
+                <Image
+                  src={`/fish/${slug(s.name)}.jpg`}
+                  alt=""
+                  fill
+                  sizes="30vw"
+                  className="object-contain p-1 opacity-[0.10] saturate-0 group-hover:opacity-40 transition-opacity duration-700"
+                />
+                <span className="relative text-caption font-mono tracking-[0.3em] text-[#8a7c5a] uppercase">
+                  still chasing
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* engraved brass nameplate */}
+          <div className="nameplate mt-3 px-3 py-1.5 text-center">
+            <span className="block font-display leading-none text-[0.8rem] tracking-[0.14em] uppercase">
+              {s.name}
+            </span>
+            <span className="block font-mono italic text-[0.6rem] leading-tight mt-0.5 opacity-80">
+              {s.latin}
+              {s.where ? ` · ${s.where}` : ""}
+            </span>
+          </div>
+        </div>
+      </div>
     </motion.figure>
   );
 }
 
-function Grid({ items, offset = 0 }: { items: Species[]; offset?: number }) {
-  return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8"
-    >
-      {items.map((s, i) => (
-        <Plate key={s.name} s={s} index={offset + i} />
-      ))}
-    </motion.div>
-  );
-}
-
 export default function Fishing() {
+  const caught = SPECIES.filter((s) => s.caught).length;
   const total = SPECIES.length;
-  const pct = Math.round((caught.length / total) * 100);
 
   return (
-    <div className="relative min-h-screen">
-      <div className="relative z-10 px-5 md:px-12 lg:px-20 py-16 md:py-20 max-w-6xl mx-auto">
+    <div className="wall relative min-h-screen">
+      <div className="relative z-10 px-5 md:px-12 lg:px-16 py-14 md:py-20 max-w-6xl mx-auto">
         {/* Breadcrumb */}
         <motion.div
           className="mb-10"
@@ -132,58 +111,42 @@ export default function Fishing() {
           </Link>
         </motion.div>
 
-        {/* Header */}
+        {/* Museum wall label */}
         <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 18 }}
+          className="mb-14 border border-border/70 bg-surface/30 backdrop-blur-sm px-6 py-5 max-w-xl"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
-          <span className="text-caption font-mono text-accent-dim block mb-3">02</span>
-          <h1 className="text-h1 font-display">fishing</h1>
-          <p className="text-caption font-mono text-muted mt-2 tracking-widest">
-            41.2712°N 72.3418°W · a specimen collection
+          <span className="text-caption font-mono text-accent-dim block mb-3">02 · fishing</span>
+          <h1 className="text-h2 font-display text-primary leading-tight">The Karol Collection</h1>
+          <p className="text-body font-mono text-secondary mt-2 leading-relaxed">
+            Specimens landed on Long Island Sound &amp; beyond — and the two still hanging in
+            empty frames until the day they aren&apos;t.
           </p>
+          <div className="flex items-center gap-6 mt-4 text-caption font-mono text-muted">
+            <span><span className="text-accent">{caught}</span> landed</span>
+            <span>{total - caught} still chasing</span>
+            <span className="hidden sm:block tracking-widest">41.2712°N 72.3418°W</span>
+          </div>
         </motion.div>
 
-        {/* Meter */}
+        {/* Salon wall */}
         <motion.div
-          className="mb-12 max-w-md"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease, delay: 0.1 }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ staggerChildren: 0.05 }}
+          className="columns-1 sm:columns-2 xl:columns-3 gap-8"
         >
-          <div className="flex items-baseline justify-between mb-2 text-caption font-mono">
-            <span className="text-secondary">caught</span>
-            <span className="text-muted"><span className="text-accent">{caught.length}</span> / {total} species</span>
-          </div>
-          <div className="h-px w-full bg-border overflow-hidden">
-            <motion.div
-              className="h-full bg-accent"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 1.1, ease, delay: 0.25 }}
-            />
-          </div>
+          {ORDER.map((s, i) => (
+            <Frame key={s.name} s={s} i={i} />
+          ))}
         </motion.div>
-
-        {/* Caught */}
-        <div className="flex items-baseline gap-3 mb-6">
-          <h2 className="text-h3 font-display text-primary">on the board</h2>
-          <span className="text-caption font-mono text-muted">ranked by how hard they pull</span>
-        </div>
-        <Grid items={caught} />
-
-        {/* Wishlist */}
-        <div className="flex items-baseline gap-3 mt-16 mb-6">
-          <h2 className="text-h3 font-display text-primary">still chasing</h2>
-          <span className="text-caption font-mono text-muted">{wishlist.length} on the list</span>
-        </div>
-        <Grid items={wishlist} offset={caught.length} />
 
         {/* Credit */}
-        <p className="mt-16 text-caption font-mono text-muted/70 normal-case tracking-normal max-w-2xl">
-          plates: S.F. Denton & contemporaries, via the Freshwater and Marine Image Bank
+        <p className="mt-14 text-caption font-mono text-muted/70 normal-case tracking-normal max-w-2xl">
+          plates: S.F. Denton &amp; contemporaries, via the Freshwater and Marine Image Bank
           (Wikimedia Commons) — public domain.
         </p>
       </div>
