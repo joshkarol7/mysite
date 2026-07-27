@@ -100,16 +100,20 @@ export default function Travel() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
             >
-              <div className="mb-10">
-                <h1 className="text-h1 font-display">travel</h1>
+              <div className="mb-9">
+                <h1 className="text-h1 font-display">my tops</h1>
+                <p className="text-body text-secondary mt-3">My favorite places on earth.</p>
               </div>
-              <div className="space-y-7">
+              <div className="border-t border-border">
                 {TOP_THREES.map((cat) => (
-                  <div key={cat.category}>
-                    <h2 className="text-h3 font-display mb-1.5">{cat.category}</h2>
-                    <div className="space-y-0.5">
-                      {cat.picks.map((p) => (
-                        <p key={p.name} className="text-body font-mono text-primary">{p.name}</p>
+                  <div key={cat.category} className="py-4 border-b border-border">
+                    <p className="text-caption font-mono text-accent-dim mb-2.5 tracking-widest uppercase">{cat.category}</p>
+                    <div className="space-y-1.5">
+                      {cat.picks.map((p, i) => (
+                        <div key={p.name} className="flex items-baseline gap-2.5">
+                          <span className="font-mono text-caption text-muted/70 w-6 shrink-0">0{i + 1}</span>
+                          <span className="text-body font-display">{p.name}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
