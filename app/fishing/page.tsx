@@ -2,23 +2,49 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { WANT, PHOTOS, type Fish } from "./species";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { PHOTOS } from "./species";
 
 const ease = [0.14, 1, 0.34, 1] as const;
+const TILT = [-2.5, 1.8, -1.2, 2.4, -2, 1.4, -1.8, 2.2, -1.5, 1.6];
 
-function Row({ f, i }: { f: Fish; i: number }) {
+function Shot({ i, onOpen }: { i: number; onOpen: (i: number) => void }) {
+  const reduce = useReducedMotion();
+  const p = PHOTOS[i];
+  const tilt = reduce ? 0 : TILT[i % TILT.length];
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10px" }}
-      transition={{ duration: 0.4, ease, delay: (i % 16) * 0.02 }}
-      className="flex items-center gap-3 py-2.5 border-b border-border/60"
+    <motion.figure
+      className="mb-8 break-inside-avoid"
+      initial={{ opacity: 0, y: 40, rotate: tilt * 1.6, scale: 0.92 }}
+      whileInView={{ opacity: 1, y: 0, rotate: tilt, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ type: "spring", stiffness: 120, damping: 12, mass: 0.6 }}
     >
-      <span className="h-[18px] w-[18px] shrink-0 rounded-[5px] border border-secondary/50" />
-      <span className="text-body font-display text-secondary">{f.name}</span>
-    </motion.div>
+      <motion.button
+        type="button"
+        onClick={() => onOpen(i)}
+        whileHover={reduce ? undefined : { rotate: 0, scale: 1.035, y: -6 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 300, damping: 18 }}
+        className="group block w-full text-left focus:outline-none"
+      >
+        <div className="relative overflow-hidden rounded-2xl bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
+          <motion.div layoutId={`p-${i}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={p.src}
+              alt={p.caption}
+              loading="lazy"
+              className="w-full h-auto block group-hover:scale-[1.05] transition-transform duration-[600ms]"
+            />
+          </motion.div>
+          <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5 group-hover:ring-accent/25 transition-all duration-300" />
+        </div>
+        <figcaption className="mt-3 px-1 text-body font-display text-secondary group-hover:text-accent transition-colors duration-300">
+          {p.caption}
+        </figcaption>
+      </motion.button>
+    </motion.figure>
   );
 }
 
@@ -27,7 +53,7 @@ export default function Fishing() {
 
   return (
     <div className="relative min-h-screen">
-      <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-8 py-16 md:py-20">
+      <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-8 py-16 md:py-20">
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -39,48 +65,25 @@ export default function Fishing() {
         </motion.div>
 
         <motion.h1
-          className="text-h1 font-display mt-8 mb-10"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease }}
+          className="text-h1 font-display mt-8"
+          initial={{ opacity: 0, y: 20, rotate: -2 }}
+          animate={{ opacity: 1, y: 0, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 120, damping: 11 }}
         >
           fishing
         </motion.h1>
+        <motion.p
+          className="mt-3 mb-12 text-body font-mono text-muted"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
+          a gallery of me holding fish, extremely proud of myself.
+        </motion.p>
 
-        {/* Photos */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {PHOTOS.map((src, i) => (
-            <motion.button
-              key={src}
-              type="button"
-              onClick={() => setOpen(i)}
-              initial={{ opacity: 0, scale: 0.96 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-20px" }}
-              transition={{ duration: 0.45, ease, delay: (i % 8) * 0.04 }}
-              className="group relative aspect-square overflow-hidden rounded-xl bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              <motion.div layoutId={`photo-${i}`} className="absolute inset-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={src}
-                  alt="fishing"
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
-                />
-              </motion.div>
-            </motion.button>
-          ))}
-        </div>
-
-        {/* Bucket list */}
-        <div className="flex items-center gap-3 mt-16 mb-2">
-          <span className="text-caption font-mono text-secondary">bucket list</span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-14">
-          {WANT.map((f, i) => (
-            <Row key={f.name} f={f} i={i} />
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
+          {PHOTOS.map((_, i) => (
+            <Shot key={i} i={i} onOpen={setOpen} />
           ))}
         </div>
       </div>
@@ -89,21 +92,29 @@ export default function Fishing() {
       <AnimatePresence>
         {open !== null && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-deep/90 backdrop-blur-sm cursor-zoom-out"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-deep/92 backdrop-blur-sm cursor-zoom-out"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
             onClick={() => setOpen(null)}
           >
-            <motion.div layoutId={`photo-${open}`} className="relative max-w-4xl w-full">
+            <motion.div layoutId={`p-${open}`} className="relative max-w-4xl w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={PHOTOS[open]}
-                alt="fishing"
-                className="w-full max-h-[85vh] object-contain rounded-xl"
+                src={PHOTOS[open].src}
+                alt={PHOTOS[open].caption}
+                className="w-full max-h-[80vh] object-contain rounded-2xl"
               />
             </motion.div>
+            <motion.p
+              className="mt-5 text-body font-display text-primary"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.3 }}
+            >
+              {PHOTOS[open].caption}
+            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
