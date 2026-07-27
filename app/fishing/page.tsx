@@ -1,151 +1,136 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { CAUGHT, WANT, PHOTOS, type Fish } from "./species";
+import { motion, useReducedMotion } from "framer-motion";
+import { CAUGHT, WANT, type Fish } from "./species";
 
 const ease = [0.14, 1, 0.34, 1] as const;
 
-function Tile({
-  f,
-  onFocusFish,
-  dim,
-  i,
-}: {
-  f: Fish;
-  onFocusFish: (f: Fish) => void;
-  dim?: boolean;
-  i: number;
-}) {
+function Box({ checked, delay }: { checked: boolean; delay: number }) {
+  const reduce = useReducedMotion();
   return (
-    <motion.button
-      type="button"
-      onMouseEnter={() => onFocusFish(f)}
-      onFocus={() => onFocusFish(f)}
-      onClick={() => onFocusFish(f)}
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, margin: "-20px" }}
-      transition={{ delay: (i % 12) * 0.015, duration: 0.4, ease }}
-      className="group relative aspect-square rounded-[18px] overflow-hidden focus:outline-none
-                 focus-visible:ring-2 focus-visible:ring-[#c98a3a]"
-      style={{ background: "#e7e0d1", boxShadow: "0 1px 3px rgba(60,45,20,0.12)" }}
-      aria-label={f.name}
+    <span
+      className={`relative inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
+        checked ? "border-accent bg-accent/90" : "border-secondary/50 bg-transparent"
+      }`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={f.img}
-        alt={f.name}
-        loading="lazy"
-        className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.08] ${
-          dim ? "grayscale-[0.4]" : ""
-        }`}
-        style={{ opacity: dim ? 0.72 : 1 }}
-      />
-      <div className="absolute inset-0 rounded-[18px] ring-1 ring-inset ring-black/5 group-hover:ring-black/10 transition-all duration-300" />
-    </motion.button>
+      {checked && (
+        <svg viewBox="0 0 24 24" fill="none" className="h-3 w-3">
+          <motion.path
+            d="M5 12.5l4.2 4.3L19 7"
+            stroke="#060809"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={reduce ? { pathLength: 1 } : { pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.35, ease, delay }}
+          />
+        </svg>
+      )}
+    </span>
+  );
+}
+
+function Row({ f, checked, i }: { f: Fish; checked: boolean; i: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10px" }}
+      transition={{ duration: 0.4, ease, delay: (i % 16) * 0.02 }}
+      className="group flex items-baseline gap-3 py-2.5 border-b border-border/60"
+    >
+      <span className="translate-y-[3px]">
+        <Box checked={checked} delay={(i % 16) * 0.02 + 0.15} />
+      </span>
+      <span className="flex items-baseline gap-2 min-w-0 shrink-0">
+        <span className={`text-body font-display ${checked ? "text-primary" : "text-secondary"}`}>
+          {f.name}
+        </span>
+        <span className="hidden sm:inline text-caption font-mono italic normal-case tracking-normal text-muted truncate">
+          {f.latin}
+        </span>
+      </span>
+      <span className="flex-1 border-b border-dotted border-border/70 translate-y-[-3px] min-w-4" />
+      <span className="text-caption font-mono text-muted normal-case tracking-normal shrink-0">
+        {f.where ?? (checked ? "" : "someday")}
+      </span>
+    </motion.div>
   );
 }
 
 export default function Fishing() {
-  const [focus, setFocus] = useState<{ f: Fish; got: boolean }>({ f: CAUGHT[0], got: true });
+  const total = CAUGHT.length + WANT.length;
+  const pct = Math.round((CAUGHT.length / total) * 100);
 
   return (
-    <div className="min-h-screen" style={{ background: "#f4f1ea", color: "#2a251d" }}>
-      <div className="max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-12">
-        <Link
-          href="/"
-          className="poster-serif text-[0.85rem] tracking-wide text-[#8a7f6a] hover:text-[#2a251d] transition-colors"
+    <div className="relative min-h-screen">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-8 py-16 md:py-20">
+        {/* Breadcrumb */}
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease }}
         >
-          ← back home
-        </Link>
+          <Link href="/" className="text-caption font-mono text-secondary hover:text-accent transition-colors duration-300">
+            <span className="text-muted">{">"}</span> cd ~/home
+          </Link>
+        </motion.div>
 
-        {/* Big focus display — the name is the hero (Herb-style) */}
-        <div className="sticky top-0 z-20 -mx-5 md:-mx-8 px-5 md:px-8 pt-6 pb-5 mb-2"
-             style={{ background: "linear-gradient(#f4f1ea 78%, rgba(244,241,234,0))" }}>
-          <div className="flex items-baseline justify-between gap-4">
-            <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
-              The Catch
-            </span>
-            <span className="poster-serif text-[0.72rem] tracking-[0.2em] uppercase text-[#a2977f]">
-              {CAUGHT.length} landed · {WANT.length} wanted
-            </span>
-          </div>
-          <div className="min-h-[4.5rem] md:min-h-[5.5rem] mt-2">
-            <AnimatePresence mode="wait">
+        {/* Header */}
+        <motion.div
+          className="mt-8 mb-10"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease }}
+        >
+          <span className="text-caption font-mono text-accent-dim block mb-3">02 · the list</span>
+          <h1 className="text-h1 font-display">fish i&apos;ve caught</h1>
+          <p className="text-body font-mono text-secondary mt-3">
+            a running life list — and the ones still on the bucket list.
+          </p>
+
+          <div className="mt-6 max-w-sm">
+            <div className="flex items-baseline justify-between mb-2 text-caption font-mono">
+              <span className="text-secondary">landed</span>
+              <span className="text-muted">
+                <span className="text-accent">{CAUGHT.length}</span> / {total} species
+              </span>
+            </div>
+            <div className="h-px w-full bg-border overflow-hidden">
               <motion.div
-                key={focus.f.name}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.28, ease }}
-              >
-                <h1 className="poster-serif font-bold leading-[0.95] tracking-tight"
-                    style={{ fontSize: "clamp(2.2rem, 6vw, 4.2rem)" }}>
-                  {focus.f.name}
-                </h1>
-                <p className="poster-serif italic text-[#7b7059] mt-1 text-[0.95rem] md:text-[1.05rem]">
-                  {focus.f.latin}
-                  {focus.f.where ? ` · ${focus.f.where}` : ""}
-                  {!focus.got && <span className="not-italic tracking-widest text-[#c98a3a]"> · still chasing</span>}
-                </p>
-              </motion.div>
-            </AnimatePresence>
+                className="h-full bg-accent"
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 1.1, ease, delay: 0.3 }}
+              />
+            </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Caught */}
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-9 gap-2.5 md:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-14">
           {CAUGHT.map((f, i) => (
-            <Tile key={f.name} f={f} i={i} onFocusFish={(x) => setFocus({ f: x, got: true })} />
+            <Row key={f.name} f={f} checked i={i} />
           ))}
         </div>
 
-        {/* Wanted */}
-        <div className="flex items-center gap-3 mt-14 mb-4">
-          <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
-            On the list
-          </span>
-          <span className="h-px flex-1" style={{ background: "#ddd4c1" }} />
+        {/* Bucket list */}
+        <div className="flex items-center gap-3 mt-14 mb-2">
+          <span className="text-caption font-mono text-secondary">the bucket list</span>
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-caption font-mono text-muted">{WANT.length} to go</span>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-9 gap-2.5 md:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-14">
           {WANT.map((f, i) => (
-            <Tile key={f.name} f={f} i={i} dim onFocusFish={(x) => setFocus({ f: x, got: false })} />
+            <Row key={f.name} f={f} checked={false} i={i} />
           ))}
         </div>
 
-        {/* From the trips — real photos, small + square */}
-        <div className="flex items-center gap-3 mt-16 mb-4">
-          <span className="poster-serif text-[0.72rem] tracking-[0.3em] uppercase text-[#a2977f]">
-            From the trips
-          </span>
-          <span className="h-px flex-1" style={{ background: "#ddd4c1" }} />
-        </div>
-        <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2.5">
-          {PHOTOS.map((src, i) => (
-            <motion.div
-              key={src}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: (i % 10) * 0.02, duration: 0.4, ease }}
-              className="group relative aspect-square rounded-2xl overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(60,45,20,0.12)" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={src}
-                alt="fishing"
-                loading="lazy"
-                className="w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        <p className="poster-serif text-center text-[0.7rem] italic text-[#a2977f] mt-16">
-          placeholder list · plates after S.F. Denton &amp; Audubon, public domain
+        <p className="mt-12 text-caption font-mono text-muted/70 normal-case tracking-normal">
+          placeholder list — real one coming. tight lines.
         </p>
       </div>
     </div>
