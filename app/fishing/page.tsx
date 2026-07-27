@@ -12,7 +12,6 @@ function Shot({ i, onOpen }: { i: number; onOpen: (i: number) => void }) {
   const p = PHOTOS[i];
   return (
     <motion.figure
-      className="mb-8 break-inside-avoid"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
@@ -26,14 +25,14 @@ function Shot({ i, onOpen }: { i: number; onOpen: (i: number) => void }) {
         transition={{ duration: 0.35, ease }}
         className="group block w-full text-left focus:outline-none"
       >
-        <div className="relative overflow-hidden rounded-2xl bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
-          <motion.div layoutId={`p-${i}`}>
+        <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
+          <motion.div layoutId={`p-${i}`} className="absolute inset-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={p.src}
               alt={p.caption}
               loading="lazy"
-              className="w-full h-auto block group-hover:scale-[1.03] transition-transform duration-[600ms]"
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-[600ms]"
             />
           </motion.div>
           <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5 group-hover:ring-accent/25 transition-all duration-300" />
@@ -79,7 +78,7 @@ export default function Fishing() {
           a gallery of me holding fish, extremely proud of myself.
         </motion.p>
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
           {PHOTOS.map((_, i) => (
             <Shot key={i} i={i} onOpen={setOpen} />
           ))}

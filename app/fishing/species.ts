@@ -80,7 +80,6 @@ export type Shot = { src: string; caption: string };
 
 export const PHOTOS: Shot[] = [
   { src: "/fishing/IMG_4294.JPG", caption: "party-boat tog, dinner secured" },
-  { src: "/fishing/IMG_6591.jpg", caption: "ran it way offshore, found one" },
   { src: "/fishing/B42F2120-BDBF-4F80-9416-1C7D86DD6299.jpg", caption: "you'd scream too" },
   { src: "/fishing/3E0C9410-3FD2-4AE6-8EC4-6A89F1732C4D.jpg", caption: "reservoir donkey, real casual about it" },
   { src: "/fishing/E52F1BD8-E01B-45E5-85E4-71EAD7D9617E.jpg", caption: "doormat fluke, college era" },
