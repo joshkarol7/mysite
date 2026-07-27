@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { TopoPattern } from "../components/TopoPattern";
 
 
 const fadeUp = {
@@ -21,8 +20,6 @@ const fadeUp = {
 export default function About() {
   return (
     <div className="relative min-h-screen">
-      <TopoPattern density="medium" />
-
       <div className="relative z-10 max-w-2xl mx-auto px-6 py-16 md:py-24">
         {/* Breadcrumb */}
         <motion.div

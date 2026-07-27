@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { PageTransition } from "./components/PageTransition";
 import { SiteBackground } from "./components/SiteBackground";
 
 const spaceGrotesk = Space_Grotesk({
@@ -18,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Josh Karol",
-  description: "Co-founder + CTO @ CrowdVolt. Building, fishing, exploring.",
+  description: "Co-founder + CTO @ CrowdVolt. Design engineer.",
 };
 
 export default function RootLayout({
@@ -32,10 +31,7 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased bg-deep text-primary`}
       >
         <SiteBackground />
-        <PageTransition />
-        <div className="relative z-10">
-          {children}
-        </div>
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );

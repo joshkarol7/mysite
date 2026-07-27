@@ -9,19 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
     "framer-motion": "^12.38.0",
     "next": "15.3.8",
-    "obj2gltf": "^3.2.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "three": "^0.183.2"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@gltf-transform/core": "^4.3.0",
-    "@gltf-transform/extensions": "^4.3.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

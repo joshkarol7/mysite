@@ -1,62 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
-import { TopoPattern } from "./components/TopoPattern";
+import { motion } from "framer-motion";
+
+const ease = [0.14, 1, 0.34, 1] as const;
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 16 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.7,
-      ease: [0.14, 1, 0.34, 1] as const,
-    },
+    transition: { delay: i * 0.07, duration: 0.6, ease },
   }),
 };
 
 const stagger = {
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
+  visible: { transition: { staggerChildren: 0.07 } },
 };
 
-function HeroSection() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const textY = useTransform(scrollYProgress, [0, 1], [0, -40]);
-
+function Hero() {
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center overflow-hidden">
-      <TopoPattern density="dense" />
-
-      {/* Hero content — 3D bass swim behind via fixed layout canvas */}
-      <div className="relative z-10 max-w-6xl mx-auto px-6 w-full">
-        <motion.div
-          style={{ y: textY }}
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-        >
-          <motion.p
-            className="text-caption font-mono text-secondary mb-6"
+    <section className="relative min-h-[92vh] flex items-center">
+      <div className="max-w-3xl mx-auto px-6 w-full">
+        <motion.div initial="hidden" animate="visible" variants={stagger}>
+          <motion.div
+            className="flex items-center gap-3 mb-8 text-caption font-mono text-secondary"
             variants={fadeUp}
             custom={0}
           >
-            40.7128°N 74.0060°W
-          </motion.p>
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+            </span>
+            <span>New York · 40.7128°N 74.0060°W</span>
+          </motion.div>
 
           <motion.h1
             className="text-hero font-display text-primary mb-6"
-            style={{ textShadow: "0 2px 30px rgba(0,0,0,0.5)" }}
             variants={fadeUp}
             custom={1}
           >
@@ -66,7 +46,7 @@ function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="text-h3 font-mono text-secondary mb-8 max-w-md"
+            className="text-h3 font-mono text-secondary mb-10 max-w-lg leading-relaxed"
             variants={fadeUp}
             custom={2}
           >
@@ -79,11 +59,13 @@ function HeroSection() {
             >
               CrowdVolt
             </a>{" "}
-            <span className="text-muted">(yc w24)</span>
+            <span className="text-muted">(yc w24)</span>. i build fast consumer
+            product and the high-concurrency systems underneath it — end to end,
+            pixels to postgres.
           </motion.p>
 
           <motion.div
-            className="flex gap-6 text-caption font-mono"
+            className="flex flex-wrap gap-x-6 gap-y-2 text-caption font-mono"
             variants={fadeUp}
             custom={3}
           >
@@ -96,6 +78,14 @@ function HeroSection() {
               linkedin
             </a>
             <a
+              href="https://github.com/joshkarol7"
+              className="link-underline text-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              github
+            </a>
+            <a
               href="mailto:joshkarol98@gmail.com"
               className="link-underline text-secondary"
             >
@@ -105,100 +95,95 @@ function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
       >
-        <span className="text-caption font-mono text-muted">scroll</span>
-        <motion.div
-          className="w-px h-8 bg-muted"
-          animate={{ scaleY: [1, 0.5, 1], opacity: [0.5, 0.2, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <span className="text-caption font-mono text-muted">index</span>
+        <span className="text-muted text-sm">↓</span>
       </motion.div>
     </section>
   );
 }
 
-function SectionHeader({
+function IndexRow({
   number,
-  title,
-  coordinates,
+  href,
+  label,
+  desc,
+  index,
 }: {
   number: string;
-  title: string;
-  coordinates?: string;
+  href: string;
+  label: string;
+  desc: string;
+  index: number;
 }) {
   return (
-    <motion.div
-      className="mb-12"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.6, ease: [0.14, 1, 0.34, 1] }}
-    >
-      <div className="flex items-baseline gap-4 mb-3">
+    <motion.div variants={fadeUp} custom={index}>
+      <Link
+        href={href}
+        className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-5 py-5
+                   border-t border-border hover:border-accent-dim transition-colors duration-300"
+      >
         <span className="text-caption font-mono text-accent-dim">{number}</span>
-        {coordinates && (
-          <span className="text-caption font-mono text-muted tracking-widest hidden sm:inline">
-            {coordinates}
+        <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="text-h3 font-display text-primary group-hover:text-accent transition-colors duration-300">
+            {label}
           </span>
-        )}
-      </div>
-      <h2 className="text-h1 font-display">{title}</h2>
+          <span className="text-caption font-mono text-muted normal-case tracking-normal">
+            {desc}
+          </span>
+        </span>
+        <span className="text-secondary text-sm group-hover:translate-x-1 group-hover:text-accent transition-all duration-300">
+          →
+        </span>
+      </Link>
     </motion.div>
   );
 }
 
-function ReadingsSection() {
-  const items = [
-    {
-      title: "work expands to fill available time",
-      link: "https://en.wikipedia.org/wiki/Parkinson%27s_law",
-      source: "Parkinson's law",
-    },
-    {
-      title: "why to start a company",
-      link: "https://www.youtube.com/watch?v=3qHkcs3kG44&ab_channel=PowerfulJRE",
-      source: "Naval Ravikant",
-    },
+function IndexSection() {
+  const rows = [
+    { href: "/about", label: "about", desc: "the short version" },
+    { href: "/fishing", label: "fishing", desc: "species log + photos" },
+    { href: "/travel", label: "travel", desc: "somewhere out there" },
   ];
 
   return (
-    <section className="relative py-24 md:py-32">
-      <TopoPattern density="sparse" />
-      <div className="relative z-10 max-w-4xl mx-auto px-6">
-        <SectionHeader number="01" title="reads" coordinates="— favorites" />
+    <section className="relative py-20 md:py-28">
+      <div className="max-w-3xl mx-auto px-6">
         <motion.div
-          className="space-y-6"
+          className="flex items-baseline justify-between mb-6"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5, ease }}
+        >
+          <span className="text-caption font-mono text-secondary">index</span>
+          <span className="text-caption font-mono text-muted">
+            {rows.length.toString().padStart(2, "0")} pages
+          </span>
+        </motion.div>
+
+        <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: "-60px" }}
           variants={stagger}
+          className="border-b border-border"
         >
-          {items.map((item, i) => (
-            <motion.div
-              key={i}
-              className="group flex items-baseline gap-3 py-3 border-b border-border"
-              variants={fadeUp}
-              custom={i}
-            >
-              <span className="text-body font-mono text-primary group-hover:text-accent transition-colors duration-300">
-                {item.title}
-              </span>
-              <span className="text-muted">•</span>
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link-accent text-body font-mono"
-              >
-                {item.source}
-              </a>
-            </motion.div>
+          {rows.map((row, i) => (
+            <IndexRow
+              key={row.href}
+              number={(i + 1).toString().padStart(2, "0")}
+              href={row.href}
+              label={row.label}
+              desc={row.desc}
+              index={i}
+            />
           ))}
         </motion.div>
       </div>
@@ -206,137 +191,48 @@ function ReadingsSection() {
   );
 }
 
-function NavigationSection() {
-  const links = [
-    { href: "/about", label: "about" },
-    { href: "/fishing", label: "fishing" },
-    { href: "/travel", label: "travel" },
-  ];
-
+function Footer() {
   return (
-    <section className="relative py-24 md:py-32">
-      <TopoPattern density="medium" />
-      <div className="relative z-10 max-w-4xl mx-auto px-6">
-        <SectionHeader number="02" title="more" coordinates="— josh" />
-        <motion.div
-          className="space-y-0"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={stagger}
-        >
-          {links.map((link, i) => (
-            <motion.div key={i} variants={fadeUp} custom={i}>
-              <Link
-                href={link.href}
-                className="group flex items-center justify-between py-3 border-b border-border
-                           hover:border-accent-dim transition-all duration-300"
-              >
-                <span className="text-body font-mono text-primary group-hover:text-accent transition-colors duration-300">
-                  {link.label}
-                </span>
-                <span className="text-muted text-sm group-hover:translate-x-1 group-hover:text-accent transition-all duration-300">→</span>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function WritingSection() {
-  const articles = [
-    {
-      href: "/writing/rolling-forward",
-      title: "rolling forward",
-      date: "Apr 15, '26",
-    },
-    {
-      href: "/writing/prove-your-works-ev",
-      title: "how we build",
-      date: "Jan 13, '25",
-    },
-  ];
-
-  return (
-    <section className="relative py-24 md:py-32">
-      <TopoPattern density="sparse" />
-      <div className="relative z-10 max-w-4xl mx-auto px-6">
-        <SectionHeader number="03" title="writing" />
-        <motion.div
-          className="space-y-4"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={stagger}
-        >
-          {articles.map((article, i) => (
-            <motion.div key={i} variants={fadeUp} custom={i}>
-              <Link
-                href={article.href}
-                className="group flex items-baseline justify-between py-3 border-b border-border
-                           hover:border-accent-dim transition-all duration-300"
-              >
-                <span className="text-body font-mono text-primary group-hover:text-accent transition-colors duration-300">
-                  {article.title}
-                </span>
-                <span className="text-caption font-mono text-muted">{article.date}</span>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function ContactSection() {
-  return (
-    <section className="relative py-24 md:py-32 border-t border-border">
-      <TopoPattern density="sparse" />
-      <div className="relative z-10 max-w-4xl mx-auto px-6">
-        <SectionHeader number="04" title="contact" coordinates="40.7128°N 74.0060°W" />
-        <motion.div
-          className="flex flex-wrap gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={stagger}
-        >
-          <motion.a
+    <footer className="relative py-16 border-t border-border">
+      <div className="max-w-3xl mx-auto px-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-body font-mono">
+          <a
             href="https://www.linkedin.com/in/josh-karol-4b1a97143/"
             target="_blank"
             rel="noopener noreferrer"
-            className="link-underline text-h3 font-display"
-            variants={fadeUp}
-            custom={0}
+            className="link-underline text-secondary"
           >
             linkedin
-          </motion.a>
-          <motion.a
+          </a>
+          <a
+            href="https://github.com/joshkarol7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link-underline text-secondary"
+          >
+            github
+          </a>
+          <a
             href="mailto:joshkarol98@gmail.com"
-            className="link-underline text-h3 font-display"
-            variants={fadeUp}
-            custom={1}
+            className="link-underline text-secondary"
           >
             email
-          </motion.a>
-        </motion.div>
-
+          </a>
+        </div>
+        <p className="text-caption font-mono text-muted">
+          built with next + tailwind
+        </p>
       </div>
-    </section>
+    </footer>
   );
 }
 
 export default function Home() {
   return (
     <main>
-      <HeroSection />
-      <ReadingsSection />
-      <NavigationSection />
-      <WritingSection />
-      <ContactSection />
+      <Hero />
+      <IndexSection />
+      <Footer />
     </main>
   );
 }

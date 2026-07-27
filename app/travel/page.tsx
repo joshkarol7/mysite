@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { useRef } from "react";
-import { TopoPattern } from "../components/TopoPattern";
 
 const travelPhotos = [
   { src: "/travel/IMG_9149.jpg", alt: "Travel" },
@@ -109,8 +108,6 @@ function Photo({ src, alt, index }: { src: string; alt: string; index: number })
 export default function Travel() {
   return (
     <div className="relative min-h-screen">
-      <TopoPattern density="medium" />
-
       <div className="relative z-10 px-4 md:px-12 lg:px-20 py-16 md:py-24">
         {/* Breadcrumb */}
         <motion.div
