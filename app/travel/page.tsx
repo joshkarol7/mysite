@@ -117,12 +117,24 @@ function WallPhoto({
         btn.style.transform = "none"; // neutralize hover pop to read the resting rect
         const restRect = el.getBoundingClientRect();
         btn.style.transform = prev;
-        onOpen({
-          rect,
-          restRect,
-          natW: img?.naturalWidth || (p.o === "l" ? 3 : 2),
-          natH: img?.naturalHeight || (p.o === "l" ? 2 : 3),
-        });
+        // preload/decode the full image so the first open has correct dims + no flash
+        // (grid tiles use next/image's optimized URL, so the raw src isn't cached yet)
+        const pre = new window.Image();
+        let done = false;
+        const go = () => {
+          if (done) return;
+          done = true;
+          onOpen({
+            rect,
+            restRect,
+            natW: pre.naturalWidth || (p.o === "l" ? 3 : 2),
+            natH: pre.naturalHeight || (p.o === "l" ? 2 : 3),
+          });
+        };
+        pre.onload = go;
+        pre.onerror = go;
+        pre.src = p.src;
+        if (pre.complete && pre.naturalWidth) go();
       }}
       initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}

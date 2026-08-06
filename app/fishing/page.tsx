@@ -39,12 +39,23 @@ function Shot({
           btn.style.transform = "none"; // neutralize hover pop to read the resting rect
           const restRect = el.getBoundingClientRect();
           btn.style.transform = prev;
-          onOpen(i, {
-            rect,
-            restRect,
-            natW: img?.naturalWidth || 3,
-            natH: img?.naturalHeight || 4,
-          });
+          // preload/decode the full image so the first open has correct dims + no flash
+          const pre = new window.Image();
+          let done = false;
+          const go = () => {
+            if (done) return;
+            done = true;
+            onOpen(i, {
+              rect,
+              restRect,
+              natW: pre.naturalWidth || 3,
+              natH: pre.naturalHeight || 4,
+            });
+          };
+          pre.onload = go;
+          pre.onerror = go;
+          pre.src = p.src;
+          if (pre.complete && pre.naturalWidth) go();
         }}
         whileHover={reduce ? undefined : { scale: 1.02, y: -5 }}
         whileTap={{ scale: 0.99 }}

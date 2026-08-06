@@ -22,8 +22,9 @@ const SMOOTH = [0.16, 1, 0.3, 1] as const;
 function centered(natW: number, natH: number): Box {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const maxW = vw * 0.9;
-  const maxH = vh * 0.86;
+  const mobile = vw < 640;
+  const maxW = vw * (mobile ? 0.92 : 0.9);
+  const maxH = vh * (mobile ? 0.74 : 0.86); // leave room for the caption + X on phones
   const a = natW / natH || 1;
   let width = maxW;
   let height = width / a;
@@ -178,6 +179,30 @@ export function Lightbox({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [index, onChange]);
+
+  // lock body scroll while open (iOS-safe: pin the body + restore scroll on close)
+  useEffect(() => {
+    if (index === null) return;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [index]);
 
   return (
     <AnimatePresence onExitComplete={onClosed}>
