@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { PageHeader } from "../components/PageHeader";
 import { Lightbox, type LightboxOrigin } from "../components/Lightbox";
+import { PhotoImage } from "../components/PhotoImage";
 import { elegant } from "../lib/elegant";
 import { PHOTOS } from "./species";
 
@@ -63,14 +64,8 @@ function Shot({
         className="group block w-full text-left focus:outline-none"
       >
         <div className={`relative aspect-[3/4] overflow-hidden rounded-md bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]${hidden ? " invisible" : ""}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={p.src}
-            alt={p.caption}
-            loading="lazy"
-            className="w-full h-full object-cover"
-          />
-          <div className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-inset ring-white/5 group-hover:ring-accent/25 transition-all duration-300" />
+          <PhotoImage src={p.src} alt={p.caption} optimized={false} />
+          <div className="pointer-events-none absolute inset-0 z-10 rounded-md ring-1 ring-inset ring-white/5 group-hover:ring-accent/25 transition-all duration-300" />
         </div>
         <figcaption className="mt-3 px-1 text-body font-display text-secondary group-hover:text-accent transition-colors duration-300">
           {p.caption}

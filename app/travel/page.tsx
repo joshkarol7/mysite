@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { BackChevron } from "../components/BackChevron";
+import { PhotoImage } from "../components/PhotoImage";
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import { TOP_THREES, PHOTOS, type Photo } from "./data";
@@ -105,7 +105,6 @@ function WallPhoto({
   onOpen: (origin: LightboxOrigin) => void;
 }) {
   const reduced = useReducedMotion();
-  const [loaded, setLoaded] = useState(false);
   return (
     <motion.button
       onClick={(e) => {
@@ -146,22 +145,8 @@ function WallPhoto({
       style={{ background: "var(--color-surface)", aspectRatio: p.o === "l" ? "3 / 2" : "2 / 3" }}
       aria-label={p.caption || "Open photo"}
     >
-      <motion.div
-        className="absolute inset-0"
-        initial={false}
-        animate={{ opacity: loaded ? 1 : 0, scale: loaded ? 1 : 1.04 }}
-        transition={{ duration: 0.7, ease }}
-      >
-        <Image
-          src={p.src}
-          alt={p.caption || "travel"}
-          fill
-          sizes="400px"
-          onLoad={() => setLoaded(true)}
-          className="object-cover"
-        />
-      </motion.div>
-      <div className="absolute inset-0 ring-1 ring-inset ring-white/5 group-hover:ring-white/15 transition duration-300" />
+      <PhotoImage src={p.src} alt={p.caption || "travel"} sizes="400px" />
+      <div className="absolute inset-0 z-10 ring-1 ring-inset ring-white/5 group-hover:ring-white/15 transition duration-300" />
     </motion.button>
   );
 }
