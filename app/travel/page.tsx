@@ -60,7 +60,7 @@ function Rail() {
   const reduced = useReducedMotion();
   return (
     <motion.div
-      className="md:sticky md:top-14"
+      className="order-2 md:order-1 md:sticky md:top-14"
       initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease }}
@@ -197,20 +197,20 @@ export default function Travel() {
         <div className="max-w-6xl mx-auto">
           {/* chevron pinned to the content's left edge; "travel" centered over the right (photo) column */}
           <motion.div
-            className="mb-12 grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[340px_1fr] gap-10 lg:gap-16 md:items-center"
+            className="mb-12 flex items-center gap-4 md:grid md:grid-cols-[300px_1fr] lg:grid-cols-[340px_1fr] md:gap-16 md:items-center"
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease }}
           >
             <BackChevron href="/" />
-            <h1 className="text-h2 font-display text-primary text-center leading-none">
+            <h1 className="flex-1 md:flex-none text-h2 font-display text-primary text-center leading-none">
               Favorite spots
             </h1>
           </motion.div>
 
           <div className="grid md:grid-cols-[300px_1fr] lg:grid-cols-[340px_1fr] gap-10 lg:gap-16 items-start">
             <Rail />
-            <div>
+            <div className="order-1 md:order-2">
               <PhotoWall />
             </div>
           </div>

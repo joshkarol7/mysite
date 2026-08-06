@@ -27,7 +27,6 @@ function Shot({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-20px" }}
       transition={{ duration: 0.6, ease: smooth, delay: (i % 3) * 0.05 }}
-      className={hidden ? "invisible" : undefined}
     >
       <motion.button
         type="button"
@@ -52,7 +51,7 @@ function Shot({
         transition={{ duration: 0.35, ease: elegant }}
         className="group block w-full text-left focus:outline-none"
       >
-        <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
+        <div className={`relative aspect-[3/4] overflow-hidden rounded-md bg-elevated shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]${hidden ? " invisible" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={p.src}
