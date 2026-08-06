@@ -84,16 +84,16 @@ export type Photo = {
 };
 
 export const PHOTOS: Photo[] = [
-  { src: "/travel/IMG_9149.jpg", o: "l", caption: "Nyhavn — Copenhagen" },
-  { src: "/travel/IMG_6830.jpg", o: "p", caption: "Angkor Wat — Cambodia" },
-  { src: "/travel/IMG_7263.jpg", o: "l", caption: "Mong Kok — Hong Kong" },
-  { src: "/travel/IMG_1866.jpg", o: "l", caption: "La Pedrera — Barcelona" },
-  { src: "/travel/IMG_6782.jpg", o: "l", caption: "Valencia — Spain" },
-  { src: "/travel/IMG_6747.jpg", o: "p", caption: "Victoria Peak — Hong Kong" },
-  { src: "/travel/IMG_0807_Original.jpg", o: "l", caption: "Delicate Arch — Utah" },
-  { src: "/travel/IMG_5776.jpg", o: "p", caption: "White Sands — New Mexico" },
-  { src: "/travel/DSC00012_Original.jpg", o: "l", caption: "the Dolomites" },
-  { src: "/travel/IMG_0945.jpg", o: "p", caption: "the Amalfi Coast" },
-  { src: "/travel/IMG_5621.jpg", o: "p", caption: "sunset sail" },
-  { src: "/travel/G0091040.JPG", o: "l", caption: "" },
+  { src: "/travel/IMG_9149.jpg", o: "l", caption: "Cope" },
+  { src: "/travel/IMG_6830.jpg", o: "p", caption: "Hong Kong" },
+  { src: "/travel/IMG_7263.jpg", o: "l", caption: "Cambodia" },
+  { src: "/travel/IMG_1866.jpg", o: "l", caption: "Sicily" },
+  { src: "/travel/IMG_6782.jpg", o: "l", caption: "Victoria Peak" },
+  { src: "/travel/IMG_6747.jpg", o: "p", caption: "White Sands" },
+  { src: "/travel/IMG_0807_Original.jpg", o: "l", caption: "Arches" },
+  { src: "/travel/IMG_5776.jpg", o: "p", caption: "Valencia" },
+  { src: "/travel/DSC00012_Original.jpg", o: "l", caption: "Baja California" },
+  { src: "/travel/IMG_0945.jpg", o: "p", caption: "Jackson Hole" },
+  { src: "/travel/IMG_5621.jpg", o: "p", caption: "Gaudi" },
+  { src: "/travel/G0091040.JPG", o: "l", caption: "Alaska" },
 ];

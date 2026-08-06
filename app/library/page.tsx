@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { PageHeader } from "../components/PageHeader";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import indexRaw from "../../public/library/index.json";
@@ -94,16 +94,9 @@ export default function Library() {
   return (
     <div className="relative min-h-screen">
       <div className="relative z-10 px-5 md:px-12 lg:px-16 py-14 md:py-20 max-w-6xl mx-auto">
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, ease }}
-        >
-          <Link href="/fishing" className="text-caption font-mono text-secondary hover:text-primary transition-colors duration-300">
-            ← back
-          </Link>
-        </motion.div>
+        <div className="mb-8">
+          <PageHeader title="the library" backHref="/fishing" />
+        </div>
 
         <motion.div
           className="mb-8"
@@ -111,9 +104,7 @@ export default function Library() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
         >
-          <span className="text-caption font-mono text-accent-dim block mb-3">the plate archive</span>
-          <h1 className="text-h1 font-display">the library</h1>
-          <p className="text-body font-mono text-secondary mt-3 max-w-xl leading-relaxed">
+          <p className="text-body font-mono text-secondary max-w-xl leading-relaxed">
             {ENTRIES.length} public-domain naturalist plates — Denton, Audubon &amp; the old
             fish-commission chromolithographs. Free to borrow. Click any to see the source.
           </p>
